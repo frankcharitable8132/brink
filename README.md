@@ -136,6 +136,14 @@ Sources/Brink/
 Adding a provider (Cursor, Gemini CLI, …) means implementing the
 `UsageProvider` protocol and appending it to the list in `main.swift`.
 
+## Credits
+
+The edge-panel design is based on a concept shared by
+[@hivinz_](https://x.com/hivinz_) —
+[original post](https://x.com/hivinz_/status/2092996055248126353).
+Brink is an independent, open-source implementation of that idea; all code is
+original.
+
 ## License
 
 [MIT](LICENSE) © Semih Tali
