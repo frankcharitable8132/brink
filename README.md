@@ -18,7 +18,9 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Features
 
-- Three looks: **Black**, **Liquid Glass** (light, frosted) and **System** (glass that follows light/dark mode)
+- Three looks: **Black**, **Liquid Glass** and **System** (glass that follows light/dark mode).
+  On macOS 26+ this is Apple's real Liquid Glass (`.glassEffect`, with lensing and edge light);
+  on macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
 - Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
 - Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
 - Detail card with **Current session**, **All models** and per-model weekly limits (e.g. Fable / Opus / Sonnet)

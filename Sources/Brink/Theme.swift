@@ -115,7 +115,12 @@ struct VisualEffectBlur: NSViewRepresentable {
     }
 }
 
-// MARK: - Surface = blur + tint + optional hairline, clipped to any shape
+// MARK: - Surface = glass (or blur fallback) clipped to any shape
+//
+// macOS 26+  → real Liquid Glass via SwiftUI `.glassEffect(in:)` (lensing, edge light,
+//              live response). Works with arbitrary shapes, so the notch tab and the
+//              diamond tail get the real thing too.
+// macOS 13–15 → NSVisualEffectView blur + tint overlay ("frosted glass").
 
 struct Surface<S: Shape>: View {
     var palette: Palette
@@ -124,23 +129,42 @@ struct Surface<S: Shape>: View {
     var border: Bool = false
 
     var body: some View {
-        ZStack {
-            if palette.isGlass {
-                // Give the AppKit view an explicit, finite frame: SwiftUI may otherwise
-                // hand it NaN during the first layout pass (AppKit asserts on that).
-                GeometryReader { geo in
-                    let w = geo.size.width.isFinite ? max(geo.size.width, 1) : 1
-                    let h = geo.size.height.isFinite ? max(geo.size.height, 1) : 1
-                    VisualEffectBlur(material: palette.material, appearance: palette.appearance)
-                        .frame(width: w, height: h)
-                }
-                .clipShape(shape)
-                shape.fill(tint ?? palette.tint)
-                if border {
-                    shape.stroke(palette.cardBorder, lineWidth: 1)
-                }
+        if palette.isGlass {
+            if #available(macOS 26, *) {
+                liquidGlass
             } else {
-                shape.fill(tint ?? palette.tint)
+                frostedFallback
+            }
+        } else {
+            shape.fill(tint ?? palette.tint)
+        }
+    }
+
+    @available(macOS 26, *)
+    private var liquidGlass: some View {
+        // A light tint keeps text legible on busy wallpapers; the glass supplies
+        // its own edge highlight, so no hairline stroke is drawn here.
+        let glassTint: Color = palette.isDark
+            ? Color(red: 20/255, green: 20/255, blue: 26/255).opacity(0.45)
+            : Color.white.opacity(0.28)
+        return Color.clear
+            .glassEffect(.regular.tint(glassTint).interactive(), in: shape)
+    }
+
+    private var frostedFallback: some View {
+        ZStack {
+            // Give the AppKit view an explicit, finite frame: SwiftUI may otherwise
+            // hand it NaN during the first layout pass (AppKit asserts on that).
+            GeometryReader { geo in
+                let w = geo.size.width.isFinite ? max(geo.size.width, 1) : 1
+                let h = geo.size.height.isFinite ? max(geo.size.height, 1) : 1
+                VisualEffectBlur(material: palette.material, appearance: palette.appearance)
+                    .frame(width: w, height: h)
+            }
+            .clipShape(shape)
+            shape.fill(tint ?? palette.tint)
+            if border {
+                shape.stroke(palette.cardBorder, lineWidth: 1)
             }
         }
     }
