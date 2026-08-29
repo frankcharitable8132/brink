@@ -52,9 +52,9 @@ enum UsageColor {
     }
 
     static func color(for percent: Double) -> Color {
-        if percent < 50.0 { return Color(red: 0.13, green: 0.90, blue: 0.47) } // green  #21E678
-        if percent < 80.0 { return Color(red: 0.96, green: 0.89, blue: 0.00) } // yellow #F5E300
-        return Color(red: 1.00, green: 0.23, blue: 0.00)                       // red-orange #FF3B00
+        if percent < 50.0 { return Color(red: 0x2f/255, green: 0xd4/255, blue: 0x87/255) } // #2FD487
+        if percent < 70.0 { return Color(red: 0xf2/255, green: 0xdf/255, blue: 0x2a/255) } // #F2DF2A
+        return Color(red: 1.0, green: 0x44/255, blue: 0.0)                                 // #FF4400
     }
 }
 

@@ -9,7 +9,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Brink",
-            path: "Sources/Brink"
+            path: "Sources/Brink",
+            resources: [.process("Resources")]
         )
     ]
 )

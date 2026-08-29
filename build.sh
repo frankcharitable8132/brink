@@ -16,6 +16,10 @@ echo "==> .app paketi oluşturuluyor..."
 rm -rf "$DIST"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp ".build/release/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
+# SwiftPM resource bundle (logos) — Bundle.module looks for it in Contents/Resources
+if [ -d ".build/release/${APP_NAME}_${APP_NAME}.bundle" ]; then
+  cp -R ".build/release/${APP_NAME}_${APP_NAME}.bundle" "$APP/Contents/Resources/"
+fi
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

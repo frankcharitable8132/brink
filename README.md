@@ -18,6 +18,8 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Features
 
+- Three looks: **Black**, **Liquid Glass** (light, frosted) and **System** (glass that follows light/dark mode)
+- Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
 - Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
 - Detail card with **Current session**, **All models** and per-model weekly limits (e.g. Fable / Opus / Sonnet)
 - Auto-refresh every 2 minutes, manual refresh from the context menu
@@ -67,7 +69,7 @@ to ask Anthropic for your usage numbers. It is never sent anywhere else.
 |---|---|
 | Move mouse to right edge | Panel slides out |
 | Hover a ring | Detail card |
-| Right-click panel | **Refresh now** · **Launch at login** · **Quit Brink** |
+| Right-click panel | **Refresh now** · **Appearance** (Black / Liquid Glass / System) · **Launch at login** · **Quit Brink** |
 
 If a CLI is not installed or not logged in, its ring shows **DEMO** data so you
 can still see the UI.
@@ -128,7 +130,9 @@ Sources/Brink/
   PanelController.swift       edge panel + detail card windows (NSPanel)
   Views.swift                 SwiftUI: rings, strip, detail card
   Models.swift                data model, color scale, refresh store
+  Theme.swift                 Black / Liquid Glass / System palettes + blur surface
   LaunchAtLogin.swift         SMAppService wrapper
+  Resources/                  provider logos (template images)
   ClaudeProvider.swift        Claude usage source
   CodexProvider.swift         Codex usage source
 ```
@@ -136,13 +140,17 @@ Sources/Brink/
 Adding a provider (Cursor, Gemini CLI, …) means implementing the
 `UsageProvider` protocol and appending it to the list in `main.swift`.
 
+For design work or screenshots, `BRINK_PREVIEW=1 dist/Brink.app/Contents/MacOS/Brink`
+starts the app expanded with the first card open.
+
 ## Credits
 
 The edge-panel design is based on a concept shared by
 [@hivinz_](https://x.com/hivinz_) —
 [original post](https://x.com/hivinz_/status/2092996055248126353).
 Brink is an independent, open-source implementation of that idea; all code is
-original.
+original. Claude and OpenAI logos belong to Anthropic and OpenAI respectively and
+are used only to identify each provider.
 
 ## License
 

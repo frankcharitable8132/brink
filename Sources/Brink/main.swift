@@ -2,11 +2,13 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var store: UsageStore!
+    private var themeStore: ThemeStore!
     private var controller: PanelController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = UsageStore(providers: [ClaudeProvider(), CodexProvider()])
-        controller = PanelController(store: store)
+        themeStore = ThemeStore()
+        controller = PanelController(store: store, themeStore: themeStore)
         store.startAutoRefresh(interval: 120)
     }
 }

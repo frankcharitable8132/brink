@@ -1,24 +1,157 @@
 import SwiftUI
 import AppKit
 
-// MARK: - Left-rounded rectangle (macOS 13 compatible)
+// MARK: - Layout constants (mirror the design mockup)
 
+enum Layout {
+    static let tabWidth: CGFloat = 104        // total width incl. the 10pt curve room on the left
+    static let tabBodyInset: CGFloat = 10     // body starts 10pt in from the tab's left edge
+    static let curveZone: CGFloat = 78        // height of each S-curve
+    static let ringSize: CGFloat = 58
+    static let ringGap: CGFloat = 30
+    static let ringBlockHeight: CGFloat = 58 + 9 + 20   // ring + gap + percent label
+    static let tabPadding: CGFloat = 84       // vertical padding inside the tab
+
+    static let stripWidth: CGFloat = 8
+    static let stripHoverWidth: CGFloat = 11
+    static let stripHeight: CGFloat = 210
+
+    static let cardWidth: CGFloat = 330
+    static let cardRadius: CGFloat = 22
+    static let tailSize: CGFloat = 22
+    static let tailBox: CGFloat = 32          // bounding box of the rotated tail square (22·√2)
+    static let tailRoom: CGFloat = 20         // extra width right of the card for the tail
+    static let shadowPad: CGFloat = 28        // transparent margin around the card for its shadow
+
+    static func tabHeight(providers n: Int) -> CGFloat {
+        tabPadding * 2 + CGFloat(n) * ringBlockHeight + CGFloat(max(n - 1, 0)) * ringGap
+    }
+}
+
+// MARK: - Shapes
+
+/// The notch-style tab: flares out to the screen edge with an S-curve at top and bottom.
+struct NotchTabShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width, h = rect.height
+        let s = Layout.curveZone
+        let x0 = rect.minX + Layout.tabBodyInset
+        let xw = rect.maxX
+        var p = Path()
+        p.move(to: CGPoint(x: xw, y: rect.minY))
+        p.addCurve(to: CGPoint(x: x0, y: rect.minY + s),
+                   control1: CGPoint(x: xw, y: rect.minY + s * 0.62),
+                   control2: CGPoint(x: x0, y: rect.minY + s * 0.30))
+        p.addLine(to: CGPoint(x: x0, y: rect.maxY - s))
+        p.addCurve(to: CGPoint(x: xw, y: rect.maxY),
+                   control1: CGPoint(x: x0, y: rect.maxY - s * 0.30),
+                   control2: CGPoint(x: xw, y: rect.maxY - s * 0.62))
+        p.closeSubpath()
+        _ = w; _ = h
+        return p
+    }
+}
+
+/// A rounded square rotated 45° — drawn as a path so no transform is needed
+/// (AppKit-backed blur views can't sit under rotationEffect).
+struct DiamondShape: Shape {
+    var cornerRadius: CGFloat = 5
+    func path(in rect: CGRect) -> Path {
+        let side = rect.width / 2.0.squareRoot()
+        let square = CGRect(x: rect.midX - side / 2, y: rect.midY - side / 2, width: side, height: side)
+        let t = CGAffineTransform(translationX: rect.midX, y: rect.midY)
+            .rotated(by: .pi / 4)
+            .translatedBy(x: -rect.midX, y: -rect.midY)
+        return Path(roundedRect: square, cornerRadius: cornerRadius, style: .continuous).applying(t)
+    }
+}
+
+/// Rounded on the left side only (collapsed strip).
 struct LeftRoundedRect: Shape {
     var radius: CGFloat
-
     func path(in rect: CGRect) -> Path {
-        var path = Path()
         let r = min(radius, rect.height / 2, rect.width)
-        path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX + r, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY + r),
-                          control: CGPoint(x: rect.minX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - r))
-        path.addQuadCurve(to: CGPoint(x: rect.minX + r, y: rect.maxY),
-                          control: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.closeSubpath()
-        return path
+        var p = Path()
+        p.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + r, y: rect.minY))
+        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY + r), control: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - r))
+        p.addQuadCurve(to: CGPoint(x: rect.minX + r, y: rect.maxY), control: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.closeSubpath()
+        return p
+    }
+}
+
+// MARK: - Provider icons (vector, from the mockup)
+
+struct ClaudeIcon: Shape {
+    func path(in rect: CGRect) -> Path {
+        let s = rect.width / 24
+        var p = Path()
+        let lines: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
+            (12, 2.5, 12, 8), (12, 16, 12, 21.5), (2.5, 12, 8, 12), (16, 12, 21.5, 12),
+            (5.2, 5.2, 9.1, 9.1), (14.9, 14.9, 18.8, 18.8), (5.2, 18.8, 9.1, 14.9), (14.9, 9.1, 18.8, 5.2),
+        ]
+        for (x1, y1, x2, y2) in lines {
+            p.move(to: CGPoint(x: rect.minX + x1 * s, y: rect.minY + y1 * s))
+            p.addLine(to: CGPoint(x: rect.minX + x2 * s, y: rect.minY + y2 * s))
+        }
+        return p
+    }
+}
+
+struct CodexIcon: Shape {
+    func path(in rect: CGRect) -> Path {
+        let s = rect.width / 24
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: rect.minX + x * s, y: rect.minY + y * s) }
+        var p = Path()
+        p.move(to: pt(12, 3)); p.addLine(to: pt(19.4, 7.3)); p.addLine(to: pt(19.4, 16.7))
+        p.addLine(to: pt(12, 21)); p.addLine(to: pt(4.6, 16.7)); p.addLine(to: pt(4.6, 7.3)); p.closeSubpath()
+        p.move(to: pt(12, 8.4)); p.addLine(to: pt(15.1, 10.2)); p.addLine(to: pt(15.1, 13.8))
+        p.addLine(to: pt(12, 15.6)); p.addLine(to: pt(8.9, 13.8)); p.addLine(to: pt(8.9, 10.2)); p.closeSubpath()
+        return p
+    }
+}
+
+struct ProviderIcon: View {
+    let id: String
+    var size: CGFloat
+    var color: Color
+
+    private static let logos: [String: NSImage] = {
+        var dict: [String: NSImage] = [:]
+        for (key, file) in [("claude", "claude"), ("codex", "openai")] {
+            if let url = Bundle.module.url(forResource: file, withExtension: "png"),
+               let img = NSImage(contentsOf: url) {
+                img.isTemplate = true
+                dict[key] = img
+            }
+        }
+        return dict
+    }()
+
+    var body: some View {
+        Group {
+            if let logo = Self.logos[id] {
+                Image(nsImage: logo)
+                    .renderingMode(.template)
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(color)
+            } else {
+                switch id {
+                case "claude":
+                    ClaudeIcon().stroke(color, style: StrokeStyle(lineWidth: size * 0.1, lineCap: .round))
+                case "codex":
+                    CodexIcon().stroke(color, style: StrokeStyle(lineWidth: size * 0.08, lineCap: .round, lineJoin: .round))
+                default:
+                    Image(systemName: "sparkle").font(.system(size: size * 0.8, weight: .semibold)).foregroundColor(color)
+                }
+            }
+        }
+        .frame(width: size, height: size)
     }
 }
 
@@ -26,66 +159,73 @@ struct LeftRoundedRect: Shape {
 
 struct UsageRing: View {
     let snapshot: ProviderSnapshot
-    var size: CGFloat = 52
+    let palette: Palette
+    @State private var hovering = false
 
     private var percent: Double { snapshot.primary?.usedPercent ?? 0 }
+    private var hasData: Bool { !snapshot.windows.isEmpty }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 9) {
             ZStack {
+                Circle().stroke(palette.track, lineWidth: 5)
                 Circle()
-                    .stroke(Color.white.opacity(0.22), lineWidth: 4.5)
-                Circle()
-                    .trim(from: 0, to: snapshot.primary?.fraction ?? 0)
+                    .trim(from: 0, to: hasData ? (snapshot.primary?.fraction ?? 0) : 0)
                     .stroke(UsageColor.color(for: snapshot, percent: percent),
-                            style: StrokeStyle(lineWidth: 4.5, lineCap: .round))
+                            style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                Image(systemName: snapshot.systemImage)
-                    .font(.system(size: size * 0.32, weight: .semibold))
-                    .foregroundColor(.white)
+                    .animation(.easeOut(duration: 0.6), value: percent)
+                ProviderIcon(id: snapshot.id, size: 26, color: palette.fg)
             }
-            .frame(width: size, height: size)
-            .opacity(snapshot.windows.isEmpty ? 0.35 : 1)
+            .frame(width: Layout.ringSize, height: Layout.ringSize)
+            .scaleEffect(hovering ? 1.08 : 1)
+            .animation(.spring(response: 0.28, dampingFraction: 0.55), value: hovering)
+            .opacity(hasData ? 1 : 0.35)
 
-            Text(snapshot.windows.isEmpty ? "--" : "\(Int(percent.rounded()))%")
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundColor(.white)
+            Text(hasData ? "\(Int(percent.rounded()))%" : "--")
+                .font(.system(size: 17, weight: .semibold))
+                .monospacedDigit()
+                .foregroundColor(palette.fg)
         }
+        .frame(height: Layout.ringBlockHeight)
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
     }
 }
 
-// MARK: - Expanded column of rings
+// MARK: - Ring column + tab
 
-struct RingColumnView: View {
+struct RingCenterKey: PreferenceKey {
+    static var defaultValue: [String: CGFloat] = [:]
+    static func reduce(value: inout [String: CGFloat], nextValue: () -> [String: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: { $1 })
+    }
+}
+
+struct TabView: View {
     @ObservedObject var store: UsageStore
-    var onRingHover: (String?) -> Void
+    let palette: Palette
+    var onRingHover: (String, CGFloat) -> Void   // id, ring centre y (window coords, top-left origin)
+    @State private var centers: [String: CGFloat] = [:]
 
     var body: some View {
-        VStack(spacing: 22) {
+        VStack(spacing: Layout.ringGap) {
             ForEach(store.snapshots) { snap in
-                UsageRing(snapshot: snap)
+                UsageRing(snapshot: snap, palette: palette)
+                    .background(GeometryReader { geo in
+                        Color.clear.preference(key: RingCenterKey.self,
+                                               value: [snap.id: geo.frame(in: .global).midY])
+                    })
                     .onHover { inside in
-                        onRingHover(inside ? snap.id : nil)
+                        if inside, let y = centers[snap.id] { onRingHover(snap.id, y) }
                     }
             }
         }
-        .padding(.vertical, 26)
-        .padding(.horizontal, 18)
-        .background(
-            LeftRoundedRect(radius: 26)
-                .fill(Color.black)
-        )
-    }
-}
-
-// MARK: - Collapsed strip
-
-struct CollapsedStripView: View {
-    var body: some View {
-        LeftRoundedRect(radius: 5)
-            .fill(Color.black)
-            .frame(width: 7)
-            .padding(.vertical, 40)
+        .onPreferenceChange(RingCenterKey.self) { centers = $0 }
+        .padding(.vertical, Layout.tabPadding)
+        .padding(.leading, Layout.tabBodyInset)
+        .frame(width: Layout.tabWidth, height: Layout.tabHeight(providers: store.snapshots.count))
+        .background(Surface(palette: palette, shape: NotchTabShape()))
     }
 }
 
@@ -94,18 +234,30 @@ struct CollapsedStripView: View {
 struct PanelRootView: View {
     @ObservedObject var store: UsageStore
     @ObservedObject var state: PanelState
+    @ObservedObject var themeStore: ThemeStore
+    @Environment(\.colorScheme) private var colorScheme
     var onHoverChanged: (Bool) -> Void
-    var onRingHover: (String?) -> Void
+    var onRingHover: (String, CGFloat) -> Void
+
+    @State private var stripHover = false
+
+    private var palette: Palette { Palette.resolve(themeStore.theme, systemDark: colorScheme == .dark) }
 
     var body: some View {
-        HStack(spacing: 0) {
-            Spacer(minLength: 0)
-            if state.isExpanded {
-                RingColumnView(store: store, onRingHover: onRingHover)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-            } else {
-                CollapsedStripView()
-            }
+        ZStack(alignment: .trailing) {
+            // Collapsed strip
+            Surface(palette: palette, shape: LeftRoundedRect(radius: 6), tint: palette.stripTint)
+                .frame(width: stripHover ? Layout.stripHoverWidth : Layout.stripWidth,
+                       height: Layout.stripHeight)
+                .opacity(state.isExpanded ? 0 : 1)
+                .animation(.easeOut(duration: 0.2), value: stripHover)
+                .onHover { stripHover = $0 }
+
+            // Expanded tab
+            TabView(store: store, palette: palette, onRingHover: onRingHover)
+                .offset(x: state.isExpanded ? 0 : Layout.tabWidth * 1.1)
+                .opacity(state.isExpanded ? 1 : 0)
+                .allowsHitTesting(state.isExpanded)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         .contentShape(Rectangle())
@@ -113,6 +265,9 @@ struct PanelRootView: View {
         .contextMenu {
             Button("Refresh now") { store.refreshAll() }
             Divider()
+            Picker("Appearance", selection: $themeStore.theme) {
+                ForEach(Theme.allCases) { Text($0.title).tag($0) }
+            }
             Toggle("Launch at login", isOn: Binding(
                 get: { LaunchAtLogin.isEnabled },
                 set: { LaunchAtLogin.set($0) }
@@ -120,79 +275,127 @@ struct PanelRootView: View {
             Divider()
             Button("Quit Brink") { NSApp.terminate(nil) }
         }
-        .animation(.spring(response: 0.32, dampingFraction: 0.86), value: state.isExpanded)
+        .animation(.timingCurve(0.32, 0.9, 0.35, 1, duration: 0.38), value: state.isExpanded)
+        .environment(\.colorScheme, palette.colorScheme)
     }
 }
 
-// MARK: - Detail card (the speech-bubble in the mockup)
+// MARK: - Detail bubble
 
-struct DetailCardView: View {
-    let snapshot: ProviderSnapshot
+@MainActor
+final class DetailState: ObservableObject {
+    @Published var snapshot: ProviderSnapshot?
+    @Published var tailY: CGFloat = 60     // relative to the card's top edge
+    @Published var visible = false
+}
+
+struct DetailBubbleView: View {
+    @ObservedObject var state: DetailState
+    @ObservedObject var themeStore: ThemeStore
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var palette: Palette { Palette.resolve(themeStore.theme, systemDark: colorScheme == .dark) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: snapshot.systemImage)
-                    .font(.system(size: 15, weight: .bold))
+        ZStack(alignment: .topLeading) {
+            // Tail (behind the body so the overlap is hidden)
+            Surface(palette: palette, shape: DiamondShape(cornerRadius: 5), border: true)
+                .frame(width: Layout.tailBox, height: Layout.tailBox)
+                .offset(x: Layout.cardWidth - Layout.tailBox / 2 + 2,
+                        y: state.tailY - Layout.tailBox / 2)
+                .animation(.timingCurve(0.30, 0.90, 0.25, 1, duration: 0.4), value: state.tailY)
+
+            // Body
+            ZStack(alignment: .topLeading) {
+                if let snap = state.snapshot {
+                    DetailCardContent(snapshot: snap, palette: palette)
+                        .id(snap.id)
+                        .transition(.opacity.combined(with: .offset(y: 6)))
+                }
+            }
+            .animation(.easeInOut(duration: 0.15), value: state.snapshot?.id)
+            .padding(EdgeInsets(top: 18, leading: 20, bottom: 20, trailing: 20))
+            .frame(width: Layout.cardWidth, alignment: .topLeading)
+            .background(
+                Surface(palette: palette,
+                        shape: RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous),
+                        border: true)
+            )
+        }
+        .padding(.trailing, Layout.tailRoom)
+        .padding(Layout.shadowPad)
+        .shadow(color: Color(red: 0, green: 20/255, blue: 30/255).opacity(0.35), radius: 25, y: 18)
+        .opacity(state.visible ? 1 : 0)
+        .offset(x: state.visible ? 0 : 14)
+        .animation(.spring(response: 0.42, dampingFraction: 0.68), value: state.visible)
+        .environment(\.colorScheme, palette.colorScheme)
+    }
+}
+
+struct DetailCardContent: View {
+    let snapshot: ProviderSnapshot
+    let palette: Palette
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 9) {
+                ProviderIcon(id: snapshot.id, size: 18, color: palette.fg)
                 Text("\(snapshot.name) Usage")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                 if snapshot.isDemo {
                     Text("DEMO")
                         .font(.system(size: 9, weight: .bold))
                         .padding(.horizontal, 5).padding(.vertical, 2)
-                        .background(Capsule().fill(Color.white.opacity(0.18)))
+                        .background(Capsule().fill(palette.track))
                 }
             }
-            .foregroundColor(.white)
+            .foregroundColor(palette.fg)
+            .padding(.bottom, 14)
 
             if snapshot.windows.isEmpty {
                 Text(snapshot.error ?? "No data")
-                    .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.6))
+                    .font(.system(size: 12.5))
+                    .foregroundColor(palette.muted)
             } else {
-                ForEach(snapshot.windows) { window in
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack {
-                            Text(window.label)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white)
-                            Spacer()
-                            if let reset = window.resetText {
-                                Text(reset)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.white.opacity(0.5))
-                            }
+                ForEach(Array(snapshot.windows.enumerated()), id: \.element.id) { idx, window in
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(window.label)
+                            .font(.system(size: 13.5, weight: .medium))
+                            .foregroundColor(palette.fg)
+                        Spacer()
+                        if let reset = window.resetText {
+                            Text(reset)
+                                .font(.system(size: 12.5))
+                                .foregroundColor(palette.muted)
                         }
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule().fill(Color.white.opacity(0.22))
-                                Capsule()
-                                    .fill(UsageColor.color(for: snapshot, percent: window.usedPercent))
-                                    .frame(width: max(6, geo.size.width * window.fraction))
-                            }
-                        }
-                        .frame(height: 6)
-                        Text("\(Int(window.usedPercent.rounded()))% Used")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.7))
                     }
+                    .padding(.bottom, 7)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4).fill(palette.barTrack)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(UsageColor.color(for: snapshot, percent: window.usedPercent))
+                                .frame(width: max(8, geo.size.width * window.fraction))
+                        }
+                    }
+                    .frame(height: 7)
+                    .padding(.bottom, 7)
+
+                    Text("\(Int(window.usedPercent.rounded()))% Used")
+                        .font(.system(size: 12.5))
+                        .foregroundColor(palette.soft)
+                        .padding(.bottom, idx == snapshot.windows.count - 1 ? 0 : 15)
                 }
             }
 
             if let error = snapshot.error, !snapshot.windows.isEmpty || snapshot.isDemo {
                 Text(error)
-                    .font(.system(size: 10))
-                    .foregroundColor(.orange.opacity(0.85))
+                    .font(.system(size: 10.5))
+                    .foregroundColor(.orange.opacity(0.9))
                     .lineLimit(2)
+                    .padding(.top, 10)
             }
         }
-        .padding(16)
-        .frame(width: 300, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.black)
-        )
-        .padding(8) // room for shadow
-        .shadow(color: .black.opacity(0.35), radius: 12, y: 4)
     }
 }
