@@ -76,7 +76,7 @@ to ask Anthropic for your usage numbers. It is never sent anywhere else.
 |---|---|
 | Move mouse to right edge | Panel slides out |
 | Hover a ring | Detail card |
-| Right-click panel or card | **Refresh now** · **Appearance** · **Language** · **Launch at login** · **Notifications** · **Test notification** · **Quit Brink** |
+| Right-click panel or card | **Refresh now** · **Providers** · **Appearance** · **Language** · **Launch at login** · **Notifications** · **Test notification** · **Quit Brink** |
 | Move the mouse far from the edge | Panel folds away by itself |
 
 If a CLI is not installed or not logged in, its ring shows **DEMO** data so you

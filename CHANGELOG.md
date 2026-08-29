@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-29
+
+### Added
+- **Providers** menu: choose which rings are shown (e.g. Claude only). Hidden providers don't notify either. At least one stays visible.
+
+### Changed
+- Detail card tail is now an arrow pointing at the ring (design v3); thicker ring stroke, thinner bars.
+- Whole panel ~10 % smaller.
+
 ## [0.2.0] - 2026-08-29
 
 ### Added
@@ -40,6 +49,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/semihtalii/brink/releases/tag/v0.3.0
 [0.2.0]: https://github.com/semihtalii/brink/releases/tag/v0.2.0
 [0.1.0]: https://github.com/semihtalii/brink/releases/tag/v0.1.0

@@ -31,3 +31,6 @@
 "You've used 100 %%.%@ I'll let you know when it resets." = "Hai usato il 100 %%.%@ Ti avviso quando viene azzerato.";
 "%@ — %@ reset" = "%@ — «%@» azzerato";
 "Your full limit is available again." = "Il tuo limite completo è di nuovo disponibile.";
+
+"just now" = "proprio ora";
+"Providers" = "Provider";

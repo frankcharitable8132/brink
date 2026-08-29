@@ -31,6 +31,28 @@ final class ThemeStore: ObservableObject {
         didSet { L10n.override = language }
     }
 
+    // MARK: Provider visibility (Providers menu). At least one always stays visible.
+
+    private static let hiddenKey = "hiddenProviders"
+
+    @Published var hiddenProviders: Set<String> =
+        Set(UserDefaults.standard.stringArray(forKey: ThemeStore.hiddenKey) ?? []) {
+        didSet { UserDefaults.standard.set(Array(hiddenProviders).sorted(), forKey: Self.hiddenKey) }
+    }
+
+    func setVisible(_ id: String, _ visible: Bool, all: [String]) {
+        if visible {
+            hiddenProviders.remove(id)
+        } else if all.filter({ !hiddenProviders.contains($0) }).count > 1 {
+            hiddenProviders.insert(id)
+        }
+    }
+
+    func visible(_ snapshots: [ProviderSnapshot]) -> [ProviderSnapshot] {
+        let shown = snapshots.filter { !hiddenProviders.contains($0.id) }
+        return shown.isEmpty ? snapshots : shown
+    }
+
     init() {
         theme = Theme(rawValue: UserDefaults.standard.string(forKey: Self.key) ?? "") ?? .black
     }

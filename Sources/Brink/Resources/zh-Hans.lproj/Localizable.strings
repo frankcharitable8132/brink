@@ -31,3 +31,6 @@
 "You've used 100 %%.%@ I'll let you know when it resets." = "已使用 100%%。%@ 重置后我会通知你。";
 "%@ — %@ reset" = "%@ — “%@”已重置";
 "Your full limit is available again." = "你的全部额度已恢复。";
+
+"just now" = "刚刚";
+"Providers" = "服务商";

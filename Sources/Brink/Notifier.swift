@@ -70,7 +70,8 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     func observe(_ snapshots: [ProviderSnapshot]) {
         guard isEnabled else { return }
         let now = Date()
-        for snap in snapshots where !snap.isDemo {
+        let hidden = Set(UserDefaults.standard.stringArray(forKey: "hiddenProviders") ?? [])
+        for snap in snapshots where !snap.isDemo && !hidden.contains(snap.id) {
             for window in snap.windows {
                 let key = "\(snap.id)|\(window.label)"
                 let isFull = window.usedPercent >= 99.5

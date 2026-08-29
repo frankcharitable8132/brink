@@ -31,3 +31,6 @@
 "You've used 100 %%.%@ I'll let you know when it resets." = "100%% 使用しました。%@ リセットされたらお知らせします。";
 "%@ — %@ reset" = "%@ — 「%@」がリセットされました";
 "Your full limit is available again." = "上限が再び全て使用できます。";
+
+"just now" = "たった今";
+"Providers" = "プロバイダ";

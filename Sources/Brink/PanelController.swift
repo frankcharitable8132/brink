@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Combine
 
 @MainActor
 final class PanelState: ObservableObject {
@@ -19,10 +20,11 @@ final class PanelController {
     private var collapseTask: Task<Void, Never>?
 
     private let collapsedWidth: CGFloat = 14
-    private let expandedWidth: CGFloat = Layout.tabWidth + 26   // + shadow / curve room
+    private let expandedWidth: CGFloat = Layout.tabWidth + 24   // + shadow / curve room
 
     private var panelHovered = false
     private var detailHovered = false
+    private var visibilityObserver: AnyCancellable?
 
     init(store: UsageStore, themeStore: ThemeStore) {
         self.store = store
@@ -32,6 +34,12 @@ final class PanelController {
         positionPanel(expanded: false)
         panel.orderFrontRegardless()
         installFarAwayCollapse()
+        visibilityObserver = themeStore.$hiddenProviders.sink { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.positionPanel(expanded: self.state.isExpanded)
+            }
+        }
 
         // BRINK_PREVIEW=1 → start expanded with the first card open (screenshots / design review).
         if ProcessInfo.processInfo.environment["BRINK_PREVIEW"] == "1" {
@@ -102,7 +110,7 @@ final class PanelController {
     private var screen: NSScreen? { NSScreen.main ?? NSScreen.screens.first }
 
     private var panelHeight: CGFloat {
-        max(Layout.tabHeight(providers: store.snapshots.count), Layout.stripHeight) + 24
+        max(Layout.tabHeight(providers: themeStore.visible(store.snapshots).count), Layout.stripHeight) + 24
     }
 
     private func positionPanel(expanded: Bool) {
@@ -173,22 +181,22 @@ final class PanelController {
         // Measure the card for this snapshot.
         let probe = NSHostingView(rootView:
             DetailCardContent(snapshot: snap, palette: .resolve(themeStore.theme, systemDark: false))
-                .padding(EdgeInsets(top: 15, leading: 17, bottom: 17, trailing: 17))
+                .padding(EdgeInsets(top: 13, leading: 15, bottom: 15, trailing: 15))
                 .frame(width: Layout.cardWidth)
         )
-        let cardHeight = max(probe.fittingSize.height, 110)
+        let cardHeight = max(probe.fittingSize.height, 100)
         let winW = Layout.cardWidth + Layout.tailRoom + Layout.shadowPad * 2
         let winH = cardHeight + Layout.shadowPad * 2
 
         // Card top (screen coords, y up): centre the tail on the ring, clamped to the screen.
-        var cardTopY = ringScreenY + 92                       // top edge, y-up
+        var cardTopY = ringScreenY + 83                       // top edge, y-up
         let maxTop = screen.visibleFrame.maxY - 10
         let minTop = screen.visibleFrame.minY + cardHeight + 10
         cardTopY = min(max(cardTopY, minTop), maxTop)
         var tailY = cardTopY - ringScreenY                     // distance from card top, y-down
         tailY = min(max(tailY, 20), cardHeight - 20)
 
-        let x = screen.frame.maxX - Layout.tabWidth - 14 - Layout.cardWidth - Layout.shadowPad
+        let x = screen.frame.maxX - Layout.tabWidth - 12 - Layout.tailWidth - Layout.cardWidth - Layout.shadowPad
         let frame = NSRect(x: x, y: cardTopY + Layout.shadowPad - winH, width: winW, height: winH)
 
         let wasVisible = detail.visible

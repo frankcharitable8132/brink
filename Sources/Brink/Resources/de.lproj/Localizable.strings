@@ -31,3 +31,6 @@
 "You've used 100 %%.%@ I'll let you know when it resets." = "Du hast 100 %% verbraucht.%@ Ich sage Bescheid, sobald es zurückgesetzt wird.";
 "%@ — %@ reset" = "%@ — „%@“ zurückgesetzt";
 "Your full limit is available again." = "Dein volles Limit ist wieder verfügbar.";
+
+"just now" = "gerade eben";
+"Providers" = "Anbieter";
