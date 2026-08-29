@@ -11,6 +11,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 - Appearance menu: **Black**, **Liquid Glass**, **System** — real Liquid Glass (`.glassEffect`) on macOS 26+, `NSVisualEffectView` blur on older systems; choice persisted.
 - Notch-style tab shape, hover-scaling rings, detail card that glides between rings with a crossfade.
 - Provider logos as template images.
+- Right-click anywhere on the panel or the detail card for the settings menu.
+- If Claude Code rotates its token, Brink re-reads it and retries immediately instead of showing "Unauthorized" until the next cycle.
 - `BRINK_PREVIEW=1` starts expanded with the first card open (screenshots / design review).
 - Right-edge slide-out panel with a usage ring per provider and a detail card on hover.
 - Claude Code source: reads the OAuth token from the macOS Keychain (`Claude Code-credentials`) or `~/.claude/.credentials.json`; parses Anthropic's structured `limits` response (session / all models / per-model weekly) with a fallback for the older `five_hour` / `seven_day` shape.

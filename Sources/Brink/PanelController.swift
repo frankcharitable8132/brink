@@ -74,7 +74,7 @@ final class PanelController {
                               styleMask: [.borderless, .nonactivatingPanel],
                               backing: .buffered, defer: false)
         configure(detailPanel)
-        let view = DetailBubbleView(state: detail, themeStore: themeStore)
+        let view = DetailBubbleView(state: detail, store: store, themeStore: themeStore)
             .onHover { [weak self] inside in
                 self?.detailHovered = inside
                 self?.hoverChanged()
@@ -154,22 +154,22 @@ final class PanelController {
         // Measure the card for this snapshot.
         let probe = NSHostingView(rootView:
             DetailCardContent(snapshot: snap, palette: .resolve(themeStore.theme, systemDark: false))
-                .padding(EdgeInsets(top: 18, leading: 20, bottom: 20, trailing: 20))
+                .padding(EdgeInsets(top: 14, leading: 16, bottom: 16, trailing: 16))
                 .frame(width: Layout.cardWidth)
         )
-        let cardHeight = max(probe.fittingSize.height, 120)
+        let cardHeight = max(probe.fittingSize.height, 110)
         let winW = Layout.cardWidth + Layout.tailRoom + Layout.shadowPad * 2
         let winH = cardHeight + Layout.shadowPad * 2
 
         // Card top (screen coords, y up): centre the tail on the ring, clamped to the screen.
-        var cardTopY = ringScreenY + 105                       // top edge, y-up
+        var cardTopY = ringScreenY + 88                       // top edge, y-up
         let maxTop = screen.visibleFrame.maxY - 10
         let minTop = screen.visibleFrame.minY + cardHeight + 10
         cardTopY = min(max(cardTopY, minTop), maxTop)
         var tailY = cardTopY - ringScreenY                     // distance from card top, y-down
-        tailY = min(max(tailY, 24), cardHeight - 24)
+        tailY = min(max(tailY, 20), cardHeight - 20)
 
-        let x = screen.frame.maxX - Layout.tabWidth - 18 - Layout.cardWidth - Layout.shadowPad
+        let x = screen.frame.maxX - Layout.tabWidth - 16 - Layout.cardWidth - Layout.shadowPad
         let frame = NSRect(x: x, y: cardTopY + Layout.shadowPad - winH, width: winW, height: winH)
 
         let wasVisible = detail.visible

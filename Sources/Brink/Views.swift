@@ -4,23 +4,23 @@ import AppKit
 // MARK: - Layout constants (mirror the design mockup)
 
 enum Layout {
-    static let tabWidth: CGFloat = 104        // total width incl. the 10pt curve room on the left
-    static let tabBodyInset: CGFloat = 10     // body starts 10pt in from the tab's left edge
-    static let curveZone: CGFloat = 78        // height of each S-curve
-    static let ringSize: CGFloat = 58
-    static let ringGap: CGFloat = 30
-    static let ringBlockHeight: CGFloat = 58 + 9 + 20   // ring + gap + percent label
-    static let tabPadding: CGFloat = 84       // vertical padding inside the tab
+    static let tabWidth: CGFloat = 86        // total width incl. the 10pt curve room on the left
+    static let tabBodyInset: CGFloat = 8     // body starts 10pt in from the tab's left edge
+    static let curveZone: CGFloat = 62        // height of each S-curve
+    static let ringSize: CGFloat = 47
+    static let ringGap: CGFloat = 23
+    static let ringBlockHeight: CGFloat = 47 + 6 + 18   // ring + gap + percent label
+    static let tabPadding: CGFloat = 66       // vertical padding inside the tab
 
     static let stripWidth: CGFloat = 8
     static let stripHoverWidth: CGFloat = 11
-    static let stripHeight: CGFloat = 210
+    static let stripHeight: CGFloat = 208
 
-    static let cardWidth: CGFloat = 330
-    static let cardRadius: CGFloat = 22
-    static let tailSize: CGFloat = 22
-    static let tailBox: CGFloat = 32          // bounding box of the rotated tail square (22·√2)
-    static let tailRoom: CGFloat = 20         // extra width right of the card for the tail
+    static let cardWidth: CGFloat = 273
+    static let cardRadius: CGFloat = 18
+    static let tailSize: CGFloat = 18
+    static let tailBox: CGFloat = 26          // bounding box of the rotated tail square (22·√2)
+    static let tailRoom: CGFloat = 16         // extra width right of the card for the tail
     static let shadowPad: CGFloat = 28        // transparent margin around the card for its shadow
 
     static func tabHeight(providers n: Int) -> CGFloat {
@@ -174,16 +174,16 @@ struct UsageRing: View {
     private var hasData: Bool { !snapshot.windows.isEmpty }
 
     var body: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: 6) {
             ZStack {
-                Circle().stroke(palette.track, lineWidth: 5)
+                Circle().stroke(palette.track, lineWidth: 4.5)
                 Circle()
                     .trim(from: 0, to: hasData ? (snapshot.primary?.fraction ?? 0) : 0)
                     .stroke(UsageColor.color(for: snapshot, percent: percent),
-                            style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                            style: StrokeStyle(lineWidth: 4.5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeOut(duration: 0.6), value: percent)
-                ProviderIcon(id: snapshot.id, size: 26, color: palette.fg)
+                ProviderIcon(id: snapshot.id, size: 21, color: palette.fg)
             }
             .frame(width: Layout.ringSize, height: Layout.ringSize)
             .scaleEffect(hovering ? 1.08 : 1)
@@ -191,7 +191,7 @@ struct UsageRing: View {
             .opacity(hasData ? 1 : 0.35)
 
             Text(hasData ? "\(Int(percent.rounded()))%" : "--")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 15.5, weight: .semibold))
                 .monospacedDigit()
                 .foregroundColor(palette.fg)
         }
@@ -238,6 +238,27 @@ struct TabView: View {
     }
 }
 
+// MARK: - Settings menu (shared by the edge panel and the detail card)
+
+struct SettingsMenuItems: View {
+    @ObservedObject var store: UsageStore
+    @ObservedObject var themeStore: ThemeStore
+
+    var body: some View {
+        Button("Refresh now") { store.refreshAll() }
+        Divider()
+        Picker("Appearance", selection: $themeStore.theme) {
+            ForEach(Theme.allCases) { Text($0.title).tag($0) }
+        }
+        Toggle("Launch at login", isOn: Binding(
+            get: { LaunchAtLogin.isEnabled },
+            set: { LaunchAtLogin.set($0) }
+        ))
+        Divider()
+        Button("Quit Brink") { NSApp.terminate(nil) }
+    }
+}
+
 // MARK: - Panel root
 
 struct PanelRootView: View {
@@ -247,7 +268,6 @@ struct PanelRootView: View {
     @Environment(\.colorScheme) private var colorScheme
     var onHoverChanged: (Bool) -> Void
     var onRingHover: (String, CGFloat) -> Void
-
     @State private var stripHover = false
 
     private var palette: Palette { Palette.resolve(themeStore.theme, systemDark: colorScheme == .dark) }
@@ -271,19 +291,7 @@ struct PanelRootView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         .contentShape(Rectangle())
         .onHover(perform: onHoverChanged)
-        .contextMenu {
-            Button("Refresh now") { store.refreshAll() }
-            Divider()
-            Picker("Appearance", selection: $themeStore.theme) {
-                ForEach(Theme.allCases) { Text($0.title).tag($0) }
-            }
-            Toggle("Launch at login", isOn: Binding(
-                get: { LaunchAtLogin.isEnabled },
-                set: { LaunchAtLogin.set($0) }
-            ))
-            Divider()
-            Button("Quit Brink") { NSApp.terminate(nil) }
-        }
+        .contextMenu { SettingsMenuItems(store: store, themeStore: themeStore) }
         .animation(.timingCurve(0.32, 0.9, 0.35, 1, duration: 0.38), value: state.isExpanded)
         .environment(\.colorScheme, palette.colorScheme)
     }
@@ -300,6 +308,7 @@ final class DetailState: ObservableObject {
 
 struct DetailBubbleView: View {
     @ObservedObject var state: DetailState
+    @ObservedObject var store: UsageStore
     @ObservedObject var themeStore: ThemeStore
     @Environment(\.colorScheme) private var colorScheme
 
@@ -308,7 +317,7 @@ struct DetailBubbleView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             // Tail (behind the body so the overlap is hidden)
-            Surface(palette: palette, shape: DiamondShape(cornerRadius: 5), border: true)
+            Surface(palette: palette, shape: DiamondShape(cornerRadius: 4), border: true)
                 .frame(width: Layout.tailBox, height: Layout.tailBox)
                 .offset(x: Layout.cardWidth - Layout.tailBox / 2 + 2,
                         y: state.tailY - Layout.tailBox / 2)
@@ -323,7 +332,7 @@ struct DetailBubbleView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.15), value: state.snapshot?.id)
-            .padding(EdgeInsets(top: 18, leading: 20, bottom: 20, trailing: 20))
+            .padding(EdgeInsets(top: 14, leading: 16, bottom: 16, trailing: 16))
             .frame(width: Layout.cardWidth, alignment: .topLeading)
             .background(
                 Surface(palette: palette,
@@ -333,10 +342,11 @@ struct DetailBubbleView: View {
         }
         .padding(.trailing, Layout.tailRoom)
         .padding(Layout.shadowPad)
-        .shadow(color: Color(red: 0, green: 20/255, blue: 30/255).opacity(0.35), radius: 25, y: 18)
         .opacity(state.visible ? 1 : 0)
         .offset(x: state.visible ? 0 : 14)
         .animation(.spring(response: 0.42, dampingFraction: 0.68), value: state.visible)
+        .contentShape(Rectangle())
+        .contextMenu { SettingsMenuItems(store: store, themeStore: themeStore) }
         .environment(\.colorScheme, palette.colorScheme)
     }
 }
@@ -348,9 +358,9 @@ struct DetailCardContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
-                ProviderIcon(id: snapshot.id, size: 18, color: palette.fg)
+                ProviderIcon(id: snapshot.id, size: 16, color: palette.fg)
                 Text("\(snapshot.name) Usage")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 15.5, weight: .semibold))
                 if snapshot.isDemo {
                     Text("DEMO")
                         .font(.system(size: 9, weight: .bold))
@@ -359,7 +369,7 @@ struct DetailCardContent: View {
                 }
             }
             .foregroundColor(palette.fg)
-            .padding(.bottom, 14)
+            .padding(.bottom, 12)
 
             if snapshot.windows.isEmpty {
                 Text(snapshot.error ?? "No data")
@@ -378,23 +388,23 @@ struct DetailCardContent: View {
                                 .foregroundColor(palette.muted)
                         }
                     }
-                    .padding(.bottom, 7)
+                    .padding(.bottom, 6)
 
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4).fill(palette.barTrack)
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(UsageColor.color(for: snapshot, percent: window.usedPercent))
-                                .frame(width: max(8, geo.size.width * window.fraction))
+                                .frame(width: max(7, geo.size.width * window.fraction))
                         }
                     }
-                    .frame(height: 7)
-                    .padding(.bottom, 7)
+                    .frame(height: 6.5)
+                    .padding(.bottom, 6)
 
                     Text("\(Int(window.usedPercent.rounded()))% Used")
                         .font(.system(size: 12.5))
                         .foregroundColor(palette.soft)
-                        .padding(.bottom, idx == snapshot.windows.count - 1 ? 0 : 15)
+                        .padding(.bottom, idx == snapshot.windows.count - 1 ? 0 : 12)
                 }
             }
 

@@ -39,19 +39,17 @@ struct ClaudeProvider: UsageProvider {
             return demo
         }
 
-        var request = URLRequest(url: Self.usageURL)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(creds.accessToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
-        request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
-
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            var (data, status) = try await Self.requestUsage(token: creds.accessToken)
             if status == 401 {
-                // Token no longer valid: drop our cache so the next cycle
-                // re-reads Claude Code's own (possibly renewed) credentials.
+                // Claude Code rotated its token: drop our cache, re-read its store
+                // (Keychain / file) and retry once right away.
                 Self.clearOwnCopy()
+                if let fresh = Self.loadCredentials(), fresh.accessToken != creds.accessToken {
+                    (data, status) = try await Self.requestUsage(token: fresh.accessToken)
+                }
+            }
+            if status == 401 {
                 snap.error = "Unauthorized — open Claude Code once to refresh login"
                 return snap
             }
@@ -67,6 +65,16 @@ struct ClaudeProvider: UsageProvider {
             snap.error = error.localizedDescription
             return snap
         }
+    }
+
+    private static func requestUsage(token: String) async throws -> (Data, Int) {
+        var request = URLRequest(url: usageURL)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
+        request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
     }
 
     // MARK: Parsing
