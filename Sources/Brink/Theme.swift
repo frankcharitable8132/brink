@@ -44,6 +44,7 @@ struct Palette {
     var cardBorder: Color
     var tint: Color        // colour laid over the blur (or the solid surface for .black)
     var stripTint: Color
+    var textShadow: Bool = false   // soft shadow under text/icons (clear glass over photos)
 
     static func resolve(_ theme: Theme, systemDark: Bool) -> Palette {
         switch theme {
@@ -60,7 +61,8 @@ struct Palette {
                 stripTint: Color(red: 10/255, green: 10/255, blue: 12/255).opacity(0.88)
             )
         case .glass:
-            return light
+            // Like Apple's media widgets: clear glass, white type, a whisper of dimming.
+            return clear
         case .system:
             return systemDark ? dark : light
         }
@@ -74,8 +76,21 @@ struct Palette {
         track: Color(red: 15/255, green: 20/255, blue: 30/255).opacity(0.15),
         barTrack: Color(red: 15/255, green: 20/255, blue: 30/255).opacity(0.14),
         cardBorder: .white.opacity(0.65),
-        tint: .white.opacity(0.42),
-        stripTint: .white.opacity(0.55)
+        tint: .white.opacity(0.22),
+        stripTint: .white.opacity(0.45)
+    )
+
+    private static let clear = Palette(
+        isGlass: true, isDark: true,
+        fg: .white,
+        muted: .white.opacity(0.74),
+        soft: .white.opacity(0.86),
+        track: .white.opacity(0.26),
+        barTrack: .white.opacity(0.26),
+        cardBorder: .white.opacity(0.35),
+        tint: .black.opacity(0.16),
+        stripTint: .white.opacity(0.35),
+        textShadow: true
     )
 
     private static let dark = Palette(
@@ -86,8 +101,9 @@ struct Palette {
         track: .white.opacity(0.18),
         barTrack: .white.opacity(0.18),
         cardBorder: .white.opacity(0.16),
-        tint: Color(red: 28/255, green: 28/255, blue: 34/255).opacity(0.55),
-        stripTint: Color(red: 40/255, green: 40/255, blue: 48/255).opacity(0.62)
+        tint: .black.opacity(0.28),
+        stripTint: .white.opacity(0.25),
+        textShadow: true
     )
 
     var colorScheme: ColorScheme { isDark ? .dark : .light }
@@ -142,13 +158,12 @@ struct Surface<S: Shape>: View {
 
     @available(macOS 26, *)
     private var liquidGlass: some View {
-        // A light tint keeps text legible on busy wallpapers; the glass supplies
-        // its own edge highlight, so no hairline stroke is drawn here.
-        let glassTint: Color = palette.isDark
-            ? Color(red: 20/255, green: 20/255, blue: 26/255).opacity(0.45)
-            : Color.white.opacity(0.28)
+        // `.clear` is the see-through variant (media widgets): light blur, strong
+        // refraction at the edges, almost no tint. `.regular` is the frosted toolbar
+        // material — too opaque for this. A thin tint keeps type legible; the glass
+        // supplies its own edge highlight, so no hairline stroke is drawn here.
         return Color.clear
-            .glassEffect(.regular.tint(glassTint).interactive(), in: shape)
+            .glassEffect(.clear.tint(tint ?? palette.tint).interactive(), in: shape)
     }
 
     private var frostedFallback: some View {

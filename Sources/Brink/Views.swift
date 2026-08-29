@@ -155,6 +155,14 @@ struct ProviderIcon: View {
     }
 }
 
+// MARK: - Legibility shadow for type/icons on clear glass
+
+extension View {
+    func legibilityShadow(_ on: Bool) -> some View {
+        shadow(color: .black.opacity(on ? 0.35 : 0), radius: on ? 2 : 0, y: on ? 1 : 0)
+    }
+}
+
 // MARK: - Usage ring
 
 struct UsageRing: View {
@@ -188,6 +196,7 @@ struct UsageRing: View {
                 .foregroundColor(palette.fg)
         }
         .frame(height: Layout.ringBlockHeight)
+        .legibilityShadow(palette.textShadow)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
     }
@@ -397,5 +406,6 @@ struct DetailCardContent: View {
                     .padding(.top, 10)
             }
         }
+        .legibilityShadow(palette.textShadow)
     }
 }
