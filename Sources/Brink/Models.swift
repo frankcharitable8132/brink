@@ -86,7 +86,8 @@ final class UsageStore: ObservableObject {
     func startAutoRefresh(interval: TimeInterval = 120) {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.refreshAll() }
+            guard let self else { return }
+            Task { @MainActor in self.refreshAll() }
         }
         refreshAll()
     }
