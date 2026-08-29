@@ -15,7 +15,10 @@ Hover a ring → a card shows the session limit, weekly limits and reset times.
 No Dock icon, no menu bar clutter. Just the edge.
 
 <p align="center">
-  <img src="docs/screenshot.png" width="720" alt="Brink — edge panel with Claude and Codex usage rings and the Claude detail card">
+  <img src="docs/demo.gif" width="720" alt="Brink in use — move to the right edge, the panel slides out, hover a ring for details">
+</p>
+<p align="center">
+  <img src="docs/screenshot.png" width="560" alt="Brink — edge panel with Claude and Codex usage rings and the Claude detail card">
 </p>
 
 ## Features
