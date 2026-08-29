@@ -34,3 +34,11 @@
 
 "just now" = "gerade eben";
 "Providers" = "Anbieter";
+
+/* Cursor */
+"Included usage" = "Inbegriffene Nutzung";
+"Auto" = "Auto";
+"API" = "API";
+"On-demand" = "Nach Bedarf";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor-CLI-Anmeldedaten nicht gefunden — `cursor-agent login` ausführen";
+"Unauthorized — run `cursor-agent login` to refresh" = "Nicht autorisiert — `cursor-agent login` ausführen zum Aktualisieren";

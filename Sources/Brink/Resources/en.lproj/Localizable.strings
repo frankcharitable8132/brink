@@ -45,3 +45,11 @@
 
 "just now" = "just now";
 "Providers" = "Providers";
+
+/* Cursor */
+"Included usage" = "Included usage";
+"Auto" = "Auto";
+"API" = "API";
+"On-demand" = "On-demand";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor CLI credentials not found — run `cursor-agent login`";
+"Unauthorized — run `cursor-agent login` to refresh" = "Unauthorized — run `cursor-agent login` to refresh";

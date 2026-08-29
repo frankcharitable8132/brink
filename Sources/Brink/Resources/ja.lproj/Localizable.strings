@@ -34,3 +34,11 @@
 
 "just now" = "たった今";
 "Providers" = "プロバイダ";
+
+/* Cursor */
+"Included usage" = "含まれる使用量";
+"Auto" = "自動";
+"API" = "API";
+"On-demand" = "オンデマンド";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor CLI の認証情報が見つかりません — `cursor-agent login` を実行してください";
+"Unauthorized — run `cursor-agent login` to refresh" = "認証エラー — 更新するには `cursor-agent login` を実行してください";

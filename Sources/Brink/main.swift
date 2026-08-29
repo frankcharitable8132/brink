@@ -6,7 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var controller: PanelController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        store = UsageStore(providers: [ClaudeProvider(), CodexProvider()])
+        store = UsageStore(providers: [ClaudeProvider(), CodexProvider(), CursorProvider()])
         themeStore = ThemeStore()
         Notifier.shared.requestAuthorizationIfNeeded()
         controller = PanelController(store: store, themeStore: themeStore)

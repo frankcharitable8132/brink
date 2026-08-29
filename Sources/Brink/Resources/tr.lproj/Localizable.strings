@@ -45,3 +45,11 @@
 
 "just now" = "az önce";
 "Providers" = "Sağlayıcılar";
+
+/* Cursor */
+"Included usage" = "Dahil kullanım";
+"Auto" = "Auto";
+"API" = "API";
+"On-demand" = "İsteğe bağlı";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor CLI kimlik bilgileri bulunamadı — `cursor-agent login` çalıştırın";
+"Unauthorized — run `cursor-agent login` to refresh" = "Yetkisiz — yenilemek için `cursor-agent login` çalıştırın";

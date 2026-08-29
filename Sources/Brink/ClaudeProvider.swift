@@ -240,13 +240,14 @@ struct ClaudeProvider: UsageProvider {
         return Credentials(accessToken: token, expiresAt: expires)
     }
 
-    static func keychainData(service: String) -> Data? {
-        let query: [String: Any] = [
+    static func keychainData(service: String, account: String? = nil) -> Data? {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
+        if let account { query[kSecAttrAccount as String] = account }
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess else { return nil }
