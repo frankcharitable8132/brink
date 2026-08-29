@@ -1,0 +1,44 @@
+/* Usage window labels */
+"Current session" = "Current session";
+"All models" = "All models";
+"Weekly" = "Weekly";
+
+/* Card */
+"%@ Usage" = "%@ Usage";
+"%d%% Used" = "%d%% Used";
+"Resets soon" = "Resets soon";
+"Resets in %d min" = "Resets in %d min";
+"Resets in %d h" = "Resets in %d h";
+"Resets in %d h %d min" = "Resets in %d h %d min";
+"Resets %@" = "Resets %@";
+"DEMO" = "DEMO";
+"No data" = "No data";
+
+/* Menu */
+"Refresh now" = "Refresh now";
+"Appearance" = "Appearance";
+"Black" = "Black";
+"Liquid Glass" = "Liquid Glass";
+"System" = "System";
+"Launch at login" = "Launch at login";
+"Notifications" = "Notifications";
+"Test notification" = "Test notification";
+"Quit Brink" = "Quit Brink";
+
+/* Errors */
+"Claude Code credentials not found" = "Claude Code credentials not found";
+"Codex CLI credentials not found (~/.codex/auth.json)" = "Codex CLI credentials not found (~/.codex/auth.json)";
+"Unauthorized — open Claude Code once to refresh login" = "Unauthorized — open Claude Code once to refresh login";
+"Unauthorized — run `codex` once to refresh login" = "Unauthorized — run `codex` once to refresh login";
+"No usage data in response" = "No usage data in response";
+"HTTP %d" = "HTTP %d";
+
+/* Notifications */
+"%@ — %@ limit reached" = "%@ — %@ limit reached";
+"You've used 100 %%.%@ I'll let you know when it resets." = "You've used 100 %%.%@ I'll let you know when it resets.";
+"%@ — %@ reset" = "%@ — %@ reset";
+"Your full limit is available again." = "Your full limit is available again.";
+
+/* Language */
+"Language" = "Language";
+"System default" = "System default";

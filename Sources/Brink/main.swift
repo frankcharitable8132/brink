@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = UsageStore(providers: [ClaudeProvider(), CodexProvider()])
         themeStore = ThemeStore()
+        Notifier.shared.requestAuthorizationIfNeeded()
         controller = PanelController(store: store, themeStore: themeStore)
         store.startAutoRefresh(interval: 120)
     }

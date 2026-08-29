@@ -18,10 +18,13 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Features
 
-- Three looks: **Black**, **Liquid Glass** and **System** (glass that follows light/dark mode).
-  On macOS 26+ this is Apple's real Liquid Glass (`.glassEffect`, with lensing and edge light);
-  on macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
+- Three looks: **Black**, **Liquid Glass** and **System**. On macOS 26+ the glass is
+  Apple's real, adaptive Liquid Glass (`.glassEffect`): it turns light or dark from
+  what's behind it, so type stays legible over a white web page and a dark wallpaper
+  alike. On macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
 - Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
+- **Notifications** when a limit fills up — and again the moment it resets (scheduled for the reset time, so it arrives even if the app is idle)
+- **10 languages** — follows your macOS language automatically (English, Türkçe, Deutsch, Français, Español, Português (Brasil), Italiano, 日本語, 简体中文, 한국어); override in the menu
 - Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
 - Detail card with **Current session**, **All models** and per-model weekly limits (e.g. Fable / Opus / Sonnet)
 - Auto-refresh every 2 minutes, manual refresh from the context menu
@@ -71,7 +74,8 @@ to ask Anthropic for your usage numbers. It is never sent anywhere else.
 |---|---|
 | Move mouse to right edge | Panel slides out |
 | Hover a ring | Detail card |
-| Right-click panel | **Refresh now** · **Appearance** (Black / Liquid Glass / System) · **Launch at login** · **Quit Brink** |
+| Right-click panel or card | **Refresh now** · **Appearance** · **Language** · **Launch at login** · **Notifications** · **Test notification** · **Quit Brink** |
+| Move the mouse far from the edge | Panel folds away by itself |
 
 If a CLI is not installed or not logged in, its ring shows **DEMO** data so you
 can still see the UI.
@@ -134,13 +138,18 @@ Sources/Brink/
   Models.swift                data model, color scale, refresh store
   Theme.swift                 Black / Liquid Glass / System palettes + blur surface
   LaunchAtLogin.swift         SMAppService wrapper
-  Resources/                  provider logos (template images)
+  Notifier.swift              limit-reached / reset notifications (UserNotifications)
+  L10n.swift                  localization lookup + language override
+  Resources/                  provider logos, <lang>.lproj/Localizable.strings
   ClaudeProvider.swift        Claude usage source
   CodexProvider.swift         Codex usage source
 ```
 
 Adding a provider (Cursor, Gemini CLI, …) means implementing the
 `UsageProvider` protocol and appending it to the list in `main.swift`.
+Adding a language is one file: copy `Resources/en.lproj/Localizable.strings`
+to `<code>.lproj/`, translate the right-hand side, and add the code to
+`L10n.available` and `build.sh`'s `CFBundleLocalizations`.
 
 For design work or screenshots, `BRINK_PREVIEW=1 dist/Brink.app/Contents/MacOS/Brink`
 starts the app expanded with the first card open.

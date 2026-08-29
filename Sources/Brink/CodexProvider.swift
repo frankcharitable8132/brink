@@ -13,7 +13,7 @@ struct CodexProvider: UsageProvider {
                                     windows: [], error: nil)
         guard let auth = Self.loadAuth() else {
             return ClaudeProvider.demoSnapshot(name: "Codex", systemImage: "terminal",
-                                               note: "Codex CLI credentials not found (~/.codex/auth.json)")
+                                               note: L("Codex CLI credentials not found (~/.codex/auth.json)"))
         }
 
         var request = URLRequest(url: Self.usageURL)
@@ -29,13 +29,13 @@ struct CodexProvider: UsageProvider {
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
             guard status == 200 else {
                 snap.error = status == 401
-                    ? "Unauthorized — run `codex` once to refresh login"
-                    : "HTTP \(status)"
+                    ? L("Unauthorized — run `codex` once to refresh login")
+                    : L("HTTP %d", status)
                 return snap
             }
             snap.windows = Self.parseUsage(data)
             snap.updatedAt = Date()
-            if snap.windows.isEmpty { snap.error = "No usage data in response" }
+            if snap.windows.isEmpty { snap.error = L("No usage data in response") }
             return snap
         } catch {
             snap.error = error.localizedDescription

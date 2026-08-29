@@ -34,7 +34,7 @@ struct ClaudeProvider: UsageProvider {
                                     accent: UsageColor.claudeOrange)
         guard let creds = Self.loadCredentials() else {
             var demo = Self.demoSnapshot(name: "Claude", systemImage: "asterisk",
-                                         note: "Claude Code credentials not found")
+                                         note: L("Claude Code credentials not found"))
             demo.accent = UsageColor.claudeOrange
             return demo
         }
@@ -50,16 +50,16 @@ struct ClaudeProvider: UsageProvider {
                 }
             }
             if status == 401 {
-                snap.error = "Unauthorized — open Claude Code once to refresh login"
+                snap.error = L("Unauthorized — open Claude Code once to refresh login")
                 return snap
             }
             guard status == 200 else {
-                snap.error = "HTTP \(status)"
+                snap.error = L("HTTP %d", status)
                 return snap
             }
             snap.windows = Self.parseUsage(data)
             snap.updatedAt = Date()
-            if snap.windows.isEmpty { snap.error = "No usage data in response" }
+            if snap.windows.isEmpty { snap.error = L("No usage data in response") }
             return snap
         } catch {
             snap.error = error.localizedDescription

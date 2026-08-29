@@ -19,7 +19,7 @@ final class PanelController {
     private var collapseTask: Task<Void, Never>?
 
     private let collapsedWidth: CGFloat = 14
-    private let expandedWidth: CGFloat = Layout.tabWidth + 30   // + shadow / curve room
+    private let expandedWidth: CGFloat = Layout.tabWidth + 26   // + shadow / curve room
 
     private var panelHovered = false
     private var detailHovered = false
@@ -31,6 +31,7 @@ final class PanelController {
         makeDetailPanel()
         positionPanel(expanded: false)
         panel.orderFrontRegardless()
+        installFarAwayCollapse()
 
         // BRINK_PREVIEW=1 → start expanded with the first card open (screenshots / design review).
         if ProcessInfo.processInfo.environment["BRINK_PREVIEW"] == "1" {
@@ -113,6 +114,24 @@ final class PanelController {
                        display: true, animate: false)
     }
 
+    // MARK: Collapse when the cursor wanders far from the edge (mockup: > 480px)
+
+    private var mouseMonitor: Any?
+    private let farAwayDistance: CGFloat = 480
+
+    private func installFarAwayCollapse() {
+        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.state.isExpanded, let screen = self.screen else { return }
+                if NSEvent.mouseLocation.x < screen.frame.maxX - self.farAwayDistance {
+                    self.panelHovered = false
+                    self.detailHovered = false
+                    self.scheduleCollapse()
+                }
+            }
+        }
+    }
+
     // MARK: Hover logic
 
     private func hoverChanged() {
@@ -154,7 +173,7 @@ final class PanelController {
         // Measure the card for this snapshot.
         let probe = NSHostingView(rootView:
             DetailCardContent(snapshot: snap, palette: .resolve(themeStore.theme, systemDark: false))
-                .padding(EdgeInsets(top: 14, leading: 16, bottom: 16, trailing: 16))
+                .padding(EdgeInsets(top: 15, leading: 17, bottom: 17, trailing: 17))
                 .frame(width: Layout.cardWidth)
         )
         let cardHeight = max(probe.fittingSize.height, 110)
@@ -162,14 +181,14 @@ final class PanelController {
         let winH = cardHeight + Layout.shadowPad * 2
 
         // Card top (screen coords, y up): centre the tail on the ring, clamped to the screen.
-        var cardTopY = ringScreenY + 88                       // top edge, y-up
+        var cardTopY = ringScreenY + 92                       // top edge, y-up
         let maxTop = screen.visibleFrame.maxY - 10
         let minTop = screen.visibleFrame.minY + cardHeight + 10
         cardTopY = min(max(cardTopY, minTop), maxTop)
         var tailY = cardTopY - ringScreenY                     // distance from card top, y-down
         tailY = min(max(tailY, 20), cardHeight - 20)
 
-        let x = screen.frame.maxX - Layout.tabWidth - 16 - Layout.cardWidth - Layout.shadowPad
+        let x = screen.frame.maxX - Layout.tabWidth - 14 - Layout.cardWidth - Layout.shadowPad
         let frame = NSRect(x: x, y: cardTopY + Layout.shadowPad - winH, width: winW, height: winH)
 
         let wasVisible = detail.visible

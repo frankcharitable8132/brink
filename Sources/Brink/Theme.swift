@@ -10,9 +10,9 @@ enum Theme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .black: return "Black"
-        case .glass: return "Liquid Glass"
-        case .system: return "System"
+        case .black: return L("Black")
+        case .glass: return L("Liquid Glass")
+        case .system: return L("System")
         }
     }
 }
@@ -23,6 +23,12 @@ final class ThemeStore: ObservableObject {
 
     @Published var theme: Theme {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.key) }
+    }
+
+    /// "" = system default; otherwise a code from L10n.available. Changing it
+    /// re-renders every view (they observe this store), so it applies instantly.
+    @Published var language: String = L10n.override {
+        didSet { L10n.override = language }
     }
 
     init() {
@@ -60,11 +66,11 @@ struct Palette {
                 tint: Color(red: 8/255, green: 8/255, blue: 10/255).opacity(0.95),
                 stripTint: Color(red: 10/255, green: 10/255, blue: 12/255).opacity(0.88)
             )
-        case .glass:
-            // Like Apple's media widgets: clear glass, white type, a whisper of dimming.
-            return clear
-        case .system:
-            return systemDark ? dark : light
+        case .glass, .system:
+            // Both are adaptive on macOS 26; on older systems they fall back to
+            // frosted blur following (glass = light) / (system = light or dark).
+            if #available(macOS 26, *) { return adaptive }
+            return theme == .system && systemDark ? dark : light
         }
     }
 
@@ -80,17 +86,20 @@ struct Palette {
         stripTint: .white.opacity(0.45)
     )
 
-    private static let clear = Palette(
-        isGlass: true, isDark: true,
-        fg: .white,
-        muted: .white.opacity(0.74),
-        soft: .white.opacity(0.86),
-        track: .white.opacity(0.26),
-        barTrack: .white.opacity(0.26),
-        cardBorder: .white.opacity(0.35),
-        tint: .black.opacity(0.16),
+    /// Adaptive glass: Apple's regular Liquid Glass flips light/dark from what is
+    /// behind it, and `.primary` / `.secondary` follow it (vibrancy), so type stays
+    /// legible over a white web page and over a dark wallpaper alike.
+    private static let adaptive = Palette(
+        isGlass: true, isDark: false,
+        fg: .primary,
+        muted: .secondary,
+        soft: .primary.opacity(0.8),
+        track: .primary.opacity(0.18),
+        barTrack: .primary.opacity(0.18),
+        cardBorder: .clear,
+        tint: .clear,
         stripTint: .white.opacity(0.35),
-        textShadow: true
+        textShadow: false
     )
 
     private static let dark = Palette(
@@ -106,7 +115,7 @@ struct Palette {
         textShadow: true
     )
 
-    var colorScheme: ColorScheme { isDark ? .dark : .light }
+    var colorScheme: ColorScheme? { fg == .primary ? nil : (isDark ? .dark : .light) }  // nil = don't force
     var appearance: NSAppearance.Name { isDark ? .darkAqua : .aqua }
     var material: NSVisualEffectView.Material { isDark ? .hudWindow : .popover }
 }
@@ -133,11 +142,27 @@ struct VisualEffectBlur: NSViewRepresentable {
 
 // MARK: - Surface = glass (or blur fallback) clipped to any shape
 //
-// macOS 26+  → real Liquid Glass via SwiftUI `.glassEffect(in:)` (lensing, edge light,
-//              live response). Works with arbitrary shapes, so the notch tab and the
-//              diamond tail get the real thing too.
+// macOS 26+  → real Liquid Glass via SwiftUI `.glassEffect(in:)`. The *content* is
+//              placed inside the glass so its type gets adaptive vibrancy.
 // macOS 13–15 → NSVisualEffectView blur + tint overlay ("frosted glass").
 
+extension View {
+    /// Wraps `self` in a themed surface of the given shape.
+    @ViewBuilder
+    func brinkSurface<S: Shape>(_ palette: Palette, shape: S, tint: Color? = nil, border: Bool = false) -> some View {
+        if palette.isGlass {
+            if #available(macOS 26, *) {
+                self.glassEffect(.regular.interactive(), in: shape)
+            } else {
+                self.background(FrostedFallback(palette: palette, shape: shape, tint: tint, border: border))
+            }
+        } else {
+            self.background(shape.fill(tint ?? palette.tint))
+        }
+    }
+}
+
+/// A content-less surface (strip, tail).
 struct Surface<S: Shape>: View {
     var palette: Palette
     var shape: S
@@ -145,28 +170,17 @@ struct Surface<S: Shape>: View {
     var border: Bool = false
 
     var body: some View {
-        if palette.isGlass {
-            if #available(macOS 26, *) {
-                liquidGlass
-            } else {
-                frostedFallback
-            }
-        } else {
-            shape.fill(tint ?? palette.tint)
-        }
+        Color.clear.brinkSurface(palette, shape: shape, tint: tint, border: border)
     }
+}
 
-    @available(macOS 26, *)
-    private var liquidGlass: some View {
-        // `.clear` is the see-through variant (media widgets): light blur, strong
-        // refraction at the edges, almost no tint. `.regular` is the frosted toolbar
-        // material — too opaque for this. A thin tint keeps type legible; the glass
-        // supplies its own edge highlight, so no hairline stroke is drawn here.
-        return Color.clear
-            .glassEffect(.clear.tint(tint ?? palette.tint).interactive(), in: shape)
-    }
+struct FrostedFallback<S: Shape>: View {
+    var palette: Palette
+    var shape: S
+    var tint: Color?
+    var border: Bool
 
-    private var frostedFallback: some View {
+    var body: some View {
         ZStack {
             // Give the AppKit view an explicit, finite frame: SwiftUI may otherwise
             // hand it NaN during the first layout pass (AppKit asserts on that).

@@ -14,18 +14,18 @@ struct UsageWindow: Identifiable {
     var resetText: String? {
         guard let resetsAt else { return nil }
         let seconds = resetsAt.timeIntervalSinceNow
-        if seconds <= 0 { return "Resets soon" }
+        if seconds <= 0 { return L("Resets soon") }
         if seconds < 3600 {
-            return "Resets in \(Int(seconds / 60)) min"
+            return L("Resets in %d min", Int(seconds / 60))
         }
         if seconds < 86400 {
             let h = Int(seconds / 3600)
             let m = Int(seconds.truncatingRemainder(dividingBy: 3600) / 60)
-            return m > 0 ? "Resets in \(h) h \(m) min" : "Resets in \(h) h"
+            return m > 0 ? L("Resets in %d h %d min", h, m) : L("Resets in %d h", h)
         }
         let fmt = DateFormatter()
         fmt.dateFormat = "EEE HH:mm"
-        return "Resets \(fmt.string(from: resetsAt))"
+        return L("Resets %@", fmt.string(from: resetsAt))
     }
 }
 
@@ -103,6 +103,7 @@ final class UsageStore: ObservableObject {
             await MainActor.run {
                 self.snapshots = final
                 self.lastRefresh = Date()
+                Notifier.shared.observe(final)
             }
         }
     }

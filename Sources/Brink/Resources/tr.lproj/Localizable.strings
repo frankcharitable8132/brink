@@ -1,0 +1,44 @@
+/* Kullanım pencereleri */
+"Current session" = "Mevcut oturum";
+"All models" = "Tüm modeller";
+"Weekly" = "Haftalık";
+
+/* Kart */
+"%@ Usage" = "%@ Kullanımı";
+"%d%% Used" = "%%%d kullanıldı";
+"Resets soon" = "Az sonra sıfırlanır";
+"Resets in %d min" = "%d dk sonra sıfırlanır";
+"Resets in %d h" = "%d sa sonra sıfırlanır";
+"Resets in %d h %d min" = "%d sa %d dk sonra sıfırlanır";
+"Resets %@" = "%@ sıfırlanır";
+"DEMO" = "DEMO";
+"No data" = "Veri yok";
+
+/* Menü */
+"Refresh now" = "Şimdi yenile";
+"Appearance" = "Görünüm";
+"Black" = "Siyah";
+"Liquid Glass" = "Liquid Glass";
+"System" = "Sistem";
+"Launch at login" = "Girişte başlat";
+"Notifications" = "Bildirimler";
+"Test notification" = "Test bildirimi";
+"Quit Brink" = "Brink'ten çık";
+
+/* Hatalar */
+"Claude Code credentials not found" = "Claude Code oturum bilgisi bulunamadı";
+"Codex CLI credentials not found (~/.codex/auth.json)" = "Codex CLI oturum bilgisi bulunamadı (~/.codex/auth.json)";
+"Unauthorized — open Claude Code once to refresh login" = "Yetkisiz — oturumu yenilemek için Claude Code'u bir kez aç";
+"Unauthorized — run `codex` once to refresh login" = "Yetkisiz — oturumu yenilemek için `codex`'i bir kez çalıştır";
+"No usage data in response" = "Yanıtta kullanım verisi yok";
+"HTTP %d" = "HTTP %d";
+
+/* Bildirimler */
+"%@ — %@ limit reached" = "%@ — %@ limiti doldu";
+"You've used 100 %%.%@ I'll let you know when it resets." = "%%100 kullanıldı.%@ Sıfırlanınca haber vereceğim.";
+"%@ — %@ reset" = "%@ — %@ sıfırlandı";
+"Your full limit is available again." = "Limitin tamamı yeniden hazır.";
+
+/* Language */
+"Language" = "Dil";
+"System default" = "Sistem varsayılanı";

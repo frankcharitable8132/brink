@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-29
+
+### Added
+- Notifications: when any usage window (session / weekly / per-model) reaches 100 %, and again when it resets — the reset one is scheduled for the exact reset time. Toggle + test item in the menu.
+- Localization in 10 languages, following the macOS system language by default; **Language** menu to override.
+- Panel folds away when the mouse moves far (> 480 pt) from the edge.
+
+### Changed
+- Liquid Glass / System now use Apple's adaptive `.regular` glass with system text styles, so type flips light/dark with the background.
+- Slimmer proportions from the v2 design (78 pt tab, 48 pt rings, 296 pt card); card shadow removed.
+- Right-click menu available on the detail card as well.
+
+### Fixed
+- Token rotation by Claude Code no longer shows "Unauthorized" until the next cycle — Brink re-reads and retries immediately.
+- CI builds on `macos-26` (required for the Liquid Glass SDK).
+
 ## [0.1.0] - 2026-08-29
 
 ### Added
@@ -24,5 +40,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/semihtalii/brink/releases/tag/v0.2.0
 [0.1.0]: https://github.com/semihtalii/brink/releases/tag/v0.1.0
