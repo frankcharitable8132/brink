@@ -32,25 +32,48 @@ final class ThemeStore: ObservableObject {
     }
 
     // MARK: Provider visibility (Providers menu). At least one always stays visible.
+    //
+    // Two lists: `hiddenProviders` (user switched a real provider off) and
+    // `shownDemoProviders` (user switched on a provider whose CLI isn't logged in,
+    // to see its DEMO ring). By default a provider shows only when it has real data.
 
     private static let hiddenKey = "hiddenProviders"
+    private static let shownDemoKey = "shownDemoProviders"
+
+    @Published var shownDemoProviders: Set<String> =
+        Set(UserDefaults.standard.stringArray(forKey: ThemeStore.shownDemoKey) ?? []) {
+        didSet { UserDefaults.standard.set(Array(shownDemoProviders).sorted(), forKey: Self.shownDemoKey) }
+    }
 
     @Published var hiddenProviders: Set<String> =
         Set(UserDefaults.standard.stringArray(forKey: ThemeStore.hiddenKey) ?? []) {
         didSet { UserDefaults.standard.set(Array(hiddenProviders).sorted(), forKey: Self.hiddenKey) }
     }
 
-    func setVisible(_ id: String, _ visible: Bool, all: [String]) {
+    func isVisible(_ snap: ProviderSnapshot) -> Bool {
+        if hiddenProviders.contains(snap.id) { return false }
+        if snap.isDemo { return shownDemoProviders.contains(snap.id) }
+        return true
+    }
+
+    func setVisible(_ snap: ProviderSnapshot, _ visible: Bool, all: [ProviderSnapshot]) {
         if visible {
-            hiddenProviders.remove(id)
-        } else if all.filter({ !hiddenProviders.contains($0) }).count > 1 {
-            hiddenProviders.insert(id)
+            hiddenProviders.remove(snap.id)
+            if snap.isDemo { shownDemoProviders.insert(snap.id) }
+        } else {
+            if snap.isDemo { shownDemoProviders.remove(snap.id) }
+            if all.filter({ isVisible($0) }).count > 1 { hiddenProviders.insert(snap.id) }
         }
     }
 
     func visible(_ snapshots: [ProviderSnapshot]) -> [ProviderSnapshot] {
-        let shown = snapshots.filter { !hiddenProviders.contains($0.id) }
-        return shown.isEmpty ? snapshots : shown
+        let shown = snapshots.filter { isVisible($0) }
+        // Never show an empty tab: fall back to everything that isn't explicitly hidden.
+        if shown.isEmpty {
+            let fallback = snapshots.filter { !hiddenProviders.contains($0.id) }
+            return fallback.isEmpty ? snapshots : fallback
+        }
+        return shown
     }
 
     init() {

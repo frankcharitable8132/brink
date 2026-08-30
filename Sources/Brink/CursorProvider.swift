@@ -86,7 +86,7 @@ struct CursorProvider: UsageProvider {
 
         // Unlimited plans have no meaningful percentage to show.
         if let unlimited = ClaudeProvider.number(root["isUnlimited"]), unlimited == 1 {
-            return [UsageWindow(label: L("Included usage"), usedPercent: 0, resetsAt: reset)]
+            return [UsageWindow(label: "Included usage", usedPercent: 0, resetsAt: reset)]
         }
 
         let individual = root["individualUsage"] as? [String: Any]
@@ -95,13 +95,13 @@ struct CursorProvider: UsageProvider {
 
         // Headline window — total included usage (matches the app's banner).
         if let pct = ClaudeProvider.number(plan?["totalPercentUsed"]) {
-            windows.append(UsageWindow(label: L("Included usage"), usedPercent: pct, resetsAt: reset))
+            windows.append(UsageWindow(label: "Included usage", usedPercent: pct, resetsAt: reset))
         }
         if let pct = ClaudeProvider.number(plan?["autoPercentUsed"]) {
-            windows.append(UsageWindow(label: L("Auto"), usedPercent: pct, resetsAt: reset))
+            windows.append(UsageWindow(label: "Auto", usedPercent: pct, resetsAt: reset))
         }
         if let pct = ClaudeProvider.number(plan?["apiPercentUsed"]) {
-            windows.append(UsageWindow(label: L("API"), usedPercent: pct, resetsAt: reset))
+            windows.append(UsageWindow(label: "API", usedPercent: pct, resetsAt: reset))
         }
 
         // On-demand / usage-based spend, only when the user has enabled it.
@@ -109,7 +109,7 @@ struct CursorProvider: UsageProvider {
            ClaudeProvider.number(onDemand["enabled"]) == 1,
            let used = ClaudeProvider.number(onDemand["used"]),
            let limit = ClaudeProvider.number(onDemand["limit"]), limit > 0 {
-            windows.append(UsageWindow(label: L("On-demand"),
+            windows.append(UsageWindow(label: "On-demand",
                                        usedPercent: used / limit * 100, resetsAt: reset))
         }
 

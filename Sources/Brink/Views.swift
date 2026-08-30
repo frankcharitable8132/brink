@@ -261,9 +261,9 @@ struct SettingsMenuItems: View {
         Divider()
         Menu(L("Providers")) {
             ForEach(store.snapshots) { snap in
-                Toggle(snap.name, isOn: Binding(
-                    get: { !themeStore.hiddenProviders.contains(snap.id) },
-                    set: { themeStore.setVisible(snap.id, $0, all: store.snapshots.map(\.id)) }
+                Toggle(snap.isDemo ? "\(snap.name) (\(L("DEMO")))" : snap.name, isOn: Binding(
+                    get: { themeStore.isVisible(snap) },
+                    set: { themeStore.setVisible(snap, $0, all: store.snapshots) }
                 ))
             }
         }

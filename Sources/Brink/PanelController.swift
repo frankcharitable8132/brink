@@ -34,7 +34,11 @@ final class PanelController {
         positionPanel(expanded: false)
         panel.orderFrontRegardless()
         installFarAwayCollapse()
-        visibilityObserver = themeStore.$hiddenProviders.sink { [weak self] _ in
+        // Re-measure the panel whenever the set of visible rings can change
+        // (user toggles, or a provider flips between real data and DEMO).
+        visibilityObserver = themeStore.$hiddenProviders
+            .combineLatest(themeStore.$shownDemoProviders, store.$snapshots)
+            .sink { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 self.positionPanel(expanded: self.state.isExpanded)
