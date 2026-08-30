@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-30
+
+### Added
+- **Cursor** provider: included / auto / API usage (and on-demand when enabled) from the Cursor CLI login. Thanks @BryanPinheiro77 (#1).
+- Empty state: when no CLI is signed in, a single "?" ring explains what to install instead of showing demo numbers.
+
+### Changed
+- Providers without credentials are hidden by default; switch them on in **Providers** to see a DEMO ring.
+- Claude: on 429 Brink quietly retries twice within ~5 s before backing off (min 30 s) — no more "Rate limited" note on a fresh launch.
+
 ## [0.3.1] - 2026-08-30
 
 ### Fixed
@@ -55,7 +65,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/semihtalii/brink/releases/tag/v0.4.0
 [0.3.1]: https://github.com/semihtalii/brink/releases/tag/v0.3.1
 [0.3.0]: https://github.com/semihtalii/brink/releases/tag/v0.3.0
 [0.2.0]: https://github.com/semihtalii/brink/releases/tag/v0.2.0

@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **Know when you're on the brink.** A tiny macOS panel that lives on the right
-edge of your screen and shows your **Claude Code** and **Codex** usage limits
+edge of your screen and shows your **Claude Code**, **Codex** and **Cursor** usage limits
 at a glance.
 
 Move the mouse to the thin strip on the right edge → the panel slides out.
@@ -39,7 +39,7 @@ No Dock icon, no menu bar clutter. Just the edge.
 ## Requirements
 
 - macOS 13 Ventura or later
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and/or [Codex CLI](https://github.com/openai/codex), logged in
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) and/or [Cursor CLI](https://cursor.com/cli) (`cursor-agent login`) — whichever you use, logged in
 - To build from source: Xcode Command Line Tools (`xcode-select --install`)
 
 ## Install
@@ -93,6 +93,9 @@ can still see the UI.
   for its `/usage` command.
 - **Codex** — reads the token in `~/.codex/auth.json` and calls
   `chatgpt.com/backend-api/wham/usage`.
+- **Cursor** — reads the Cursor CLI session token (Keychain `cursor-access-token`)
+  and the user id from `~/.cursor/cli-config.json`, then calls
+  `cursor.com/api/usage-summary`.
 
 ### Security & privacy
 
