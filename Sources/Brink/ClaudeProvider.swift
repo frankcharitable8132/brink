@@ -58,13 +58,15 @@ struct ClaudeProvider: UsageProvider {
         }
 
         do {
-            var (data, status, response) = try await Self.requestUsage(token: creds.accessToken)
+            var activeToken = creds.accessToken
+            var (data, status, response) = try await Self.requestUsage(token: activeToken)
             if status == 401 {
                 // Claude Code rotated its token: drop our cache, re-read its store
                 // (Keychain / file) and retry once right away.
                 Self.clearOwnCopy()
                 if let fresh = Self.loadCredentials(), fresh.accessToken != creds.accessToken {
-                    (data, status, response) = try await Self.requestUsage(token: fresh.accessToken)
+                    activeToken = fresh.accessToken
+                    (data, status, response) = try await Self.requestUsage(token: activeToken)
                 }
             }
             if status == 401 {
@@ -72,7 +74,17 @@ struct ClaudeProvider: UsageProvider {
                 return snap
             }
             if status == 429 {
-                let retrySeconds = Self.retryAfterSeconds(response) ?? 60
+                // The window is short (often "Retry-After: 0"): quietly try again
+                // twice within ~5 s before showing anything. Only if that fails do
+                // we back off for the Retry-After window (min 30 s) and say so.
+                for delay: UInt64 in [2, 3] {
+                    try await Task.sleep(nanoseconds: delay * 1_000_000_000)
+                    (data, status, response) = try await Self.requestUsage(token: activeToken)
+                    if status != 429 { break }
+                }
+            }
+            if status == 429 {
+                let retrySeconds = max(30, Self.retryAfterSeconds(response) ?? 60)
                 let until = Date().addingTimeInterval(retrySeconds)
                 Self.cooldownUntil = until
                 return Self.rateLimitedSnapshot(retryAt: until)

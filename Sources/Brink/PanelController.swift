@@ -178,7 +178,7 @@ final class PanelController {
     // MARK: Detail bubble
 
     private func showDetail(for id: String, ringCenterY: CGFloat) {
-        guard let snap = store.snapshots.first(where: { $0.id == id }), let screen else { return }
+        guard let snap = themeStore.visible(store.snapshots).first(where: { $0.id == id }), let screen else { return }
         let panelFrame = panel.frame
         let ringScreenY = panelFrame.maxY - ringCenterY   // SwiftUI global y is top-down
 

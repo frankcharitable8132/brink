@@ -56,3 +56,7 @@
 "On-demand" = "On-demand";
 "Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor CLI credentials not found — run `cursor-agent login`";
 "Unauthorized — run `cursor-agent login` to refresh" = "Unauthorized — run `cursor-agent login` to refresh";
+
+/* Empty state */
+"No CLI found" = "No CLI found";
+"Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically.";

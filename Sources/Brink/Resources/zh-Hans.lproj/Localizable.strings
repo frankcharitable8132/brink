@@ -45,3 +45,7 @@
 "On-demand" = "按需";
 "Cursor CLI credentials not found — run `cursor-agent login`" = "未找到 Cursor CLI 凭据 — 请运行 `cursor-agent login`";
 "Unauthorized — run `cursor-agent login` to refresh" = "未授权 — 请运行 `cursor-agent login` 刷新";
+
+/* Empty state */
+"No CLI found" = "未找到 CLI";
+"Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink 读取你本地的登录信息。登录 Claude Code、Codex CLI 或 Cursor CLI 后，对应的圆环会自动出现。";

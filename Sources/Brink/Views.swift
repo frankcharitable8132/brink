@@ -119,7 +119,7 @@ struct ProviderIcon: View {
 
     private static let logos: [String: NSImage] = {
         var dict: [String: NSImage] = [:]
-        for (key, file) in [("claude", "claude"), ("codex", "openai")] {
+        for (key, file) in [("claude", "claude"), ("codex", "openai"), ("cursor", "cursor")] {
             if let url = Bundle.module.url(forResource: file, withExtension: "png"),
                let img = NSImage(contentsOf: url) {
                 img.isTemplate = true
@@ -146,6 +146,8 @@ struct ProviderIcon: View {
                     CodexIcon().stroke(color, style: StrokeStyle(lineWidth: size * 0.08, lineCap: .round, lineJoin: .round))
                 case "cursor":
                     Image(systemName: "cursorarrow").font(.system(size: size * 0.8, weight: .semibold)).foregroundColor(color)
+                case ThemeStore.placeholderID:
+                    Image(systemName: "questionmark").font(.system(size: size * 0.85, weight: .bold)).foregroundColor(color)
                 default:
                     Image(systemName: "sparkle").font(.system(size: size * 0.8, weight: .semibold)).foregroundColor(color)
                 }
@@ -388,7 +390,7 @@ struct DetailCardContent: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 ProviderIcon(id: snapshot.id, size: 14.5, color: palette.fg)
-                Text(L("%@ Usage", snapshot.name))
+                Text(snapshot.id == ThemeStore.placeholderID ? "Brink" : L("%@ Usage", snapshot.name))
                     .font(.system(size: 14, weight: .semibold))
                 if snapshot.isDemo {
                     Text(L("DEMO"))
@@ -402,8 +404,9 @@ struct DetailCardContent: View {
 
             if snapshot.windows.isEmpty {
                 Text(snapshot.error ?? L("No data"))
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 12))
                     .foregroundColor(palette.muted)
+                    .fixedSize(horizontal: false, vertical: true)
             } else {
                 ForEach(Array(snapshot.windows.enumerated()), id: \.element.id) { idx, window in
                     HStack(alignment: .firstTextBaseline) {

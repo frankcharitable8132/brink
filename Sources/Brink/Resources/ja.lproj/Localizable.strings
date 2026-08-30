@@ -45,3 +45,7 @@
 "On-demand" = "オンデマンド";
 "Cursor CLI credentials not found — run `cursor-agent login`" = "Cursor CLI の認証情報が見つかりません — `cursor-agent login` を実行してください";
 "Unauthorized — run `cursor-agent login` to refresh" = "認証エラー — 更新するには `cursor-agent login` を実行してください";
+
+/* Empty state */
+"No CLI found" = "CLI が見つかりません";
+"Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink はローカルのログイン情報を読み取ります。Claude Code、Codex CLI、Cursor CLI のいずれかにサインインすると、リングが自動的に表示されます。";

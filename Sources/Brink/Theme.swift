@@ -68,12 +68,20 @@ final class ThemeStore: ObservableObject {
 
     func visible(_ snapshots: [ProviderSnapshot]) -> [ProviderSnapshot] {
         let shown = snapshots.filter { isVisible($0) }
-        // Never show an empty tab: fall back to everything that isn't explicitly hidden.
-        if shown.isEmpty {
-            let fallback = snapshots.filter { !hiddenProviders.contains($0.id) }
-            return fallback.isEmpty ? snapshots : fallback
-        }
-        return shown
+        // Nothing real to show (no CLI logged in, nothing switched on): one neutral
+        // "N/A" ring whose card explains what to install — never fake numbers.
+        return shown.isEmpty ? [Self.placeholder(for: snapshots)] : shown
+    }
+
+    static let placeholderID = "none"
+
+    static func placeholder(for snapshots: [ProviderSnapshot]) -> ProviderSnapshot {
+        let lines = snapshots.map { "○ \($0.name) — \($0.error ?? L("No data"))" }
+        let text = [L("No CLI found"),
+                    L("Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically."),
+                    lines.joined(separator: "\n")].joined(separator: "\n\n")
+        return ProviderSnapshot(id: placeholderID, name: "Brink", systemImage: "questionmark",
+                                windows: [], error: text)
     }
 
     init() {
