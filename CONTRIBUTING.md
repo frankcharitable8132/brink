@@ -30,7 +30,9 @@ Swift Package, so any editor works.
 - Tokens go to the provider's own API host only. No proxies, no telemetry.
 - Never store refresh tokens. Never refresh tokens on the user's behalf.
 - Keep the UI minimal; new options belong in the context menu, not a settings window.
-- Run `./build.sh` before opening a PR; CI does the same on `macos-14`.
+- Run `./build.sh` before opening a PR; CI does the same on `macos-26`
+  (the macOS 26 SDK is needed for Liquid Glass). The Windows port lives in
+  `windows/` and builds with `dotnet build windows/Brink.csproj -c Release`.
 
 ## Reporting a bug
 

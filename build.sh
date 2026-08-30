@@ -9,17 +9,20 @@ BUNDLE_ID="com.semihtali.brink"
 DIST="dist"
 APP="$DIST/$APP_NAME.app"
 
-echo "==> Swift derleniyor (release)..."
-swift build -c release
+echo "==> Swift derleniyor (release, arm64 + x86_64)..."
+# Two single-arch builds + lipo: works with Command Line Tools alone
+# (`--arch a --arch b` needs full Xcode's xcbuild).
+swift build -c release --triple arm64-apple-macosx
+swift build -c release --triple x86_64-apple-macosx
 
 echo "==> .app paketi oluşturuluyor..."
 rm -rf "$DIST"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp ".build/release/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
-# SwiftPM resource bundle (logos) — Bundle.module looks for it in Contents/Resources
-if [ -d ".build/release/${APP_NAME}_${APP_NAME}.bundle" ]; then
-  cp -R ".build/release/${APP_NAME}_${APP_NAME}.bundle" "$APP/Contents/Resources/"
-fi
+ARM=".build/arm64-apple-macosx/release"
+X86=".build/x86_64-apple-macosx/release"
+lipo -create "$ARM/$APP_NAME" "$X86/$APP_NAME" -output "$APP/Contents/MacOS/$APP_NAME"
+# SwiftPM resource bundle (logos, .lproj) — Bundle.module looks for it in Contents/Resources
+cp -R "$ARM/${APP_NAME}_${APP_NAME}.bundle" "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

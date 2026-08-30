@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Added
+- Homebrew tap: `brew tap semihtalii/brink && brew install --cask brink` (cask strips quarantine, no Gatekeeper dance).
+- winget manifest under `packaging/winget/` (`SemihTali.Brink`, pending submission to winget-pkgs).
+- Releases now ship `SHA256SUMS-*.txt` and a GitHub build-provenance attestation for both the DMG and the Windows zip.
+- Issue and pull-request templates.
+
+### Changed
+- macOS build is a **universal binary** (arm64 + x86_64); 0.5.0 and earlier were Apple Silicon only.
+- README: correct first-launch steps for macOS 15+ (Settings → Privacy & Security → Open Anyway, or `xattr -d`); uninstall notes; comparison table now lists CodexBar and ClaudeBar.
+- GitHub release notes are generated from this changelog instead of the commit list.
+
 ## [0.5.0] - 2026-08-30
 
 ### Added

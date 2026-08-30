@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -21,16 +23,51 @@ jobs:
           chmod +x build.sh
           ./build.sh
 
+      - name: Verify universal binary
+        run: lipo -archs dist/Brink.app/Contents/MacOS/Brink | grep -q x86_64 && lipo -archs dist/Brink.app/Contents/MacOS/Brink | grep -q arm64
+
+      - name: Checksums
+        run: (cd dist && shasum -a 256 Brink.dmg > SHA256SUMS-macOS.txt && cat SHA256SUMS-macOS.txt)
+
+      - name: Attest build provenance
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/Brink.dmg
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Brink
           path: |
             dist/Brink.dmg
+            dist/SHA256SUMS-macOS.txt
+
+      - name: Release notes from CHANGELOG
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\["v"\\]" {p=1; next}
+            p && /^## \[/ {exit}
+            p {print}
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "_No CHANGELOG entry for $VERSION yet._" > release-notes.md
+          fi
+          {
+            echo
+            echo "**Downloads:** \`Brink.dmg\` (macOS 13+, universal) · \`Brink-Windows-x64.zip\` (Windows 10/11). Checksums in \`SHA256SUMS-*.txt\`; verify provenance with \`gh attestation verify <file> -R ${GITHUB_REPOSITORY}\`."
+            echo
+            echo "Not notarized yet — see [Install](https://github.com/${GITHUB_REPOSITORY}#install) for the one-time Gatekeeper / SmartScreen step."
+          } >> release-notes.md
+          cat release-notes.md
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Brink.dmg
-          generate_release_notes: true
+          files: |
+            dist/Brink.dmg
+            dist/SHA256SUMS-macOS.txt
+          body_path: release-notes.md

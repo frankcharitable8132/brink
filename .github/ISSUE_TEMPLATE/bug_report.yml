@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in Brink is wrong or broken
+labels: [bug]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [macOS, Windows]
+    validations: { required: true }
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version
+      placeholder: "macOS 26.1 / Windows 11 24H2"
+    validations: { required: true }
+  - type: input
+    id: brink-version
+    attributes:
+      label: Brink version
+      placeholder: "v0.5.0 (right-click the panel → the version is at the bottom of the menu, or check the Info.plist / exe properties)"
+    validations: { required: true }
+  - type: checkboxes
+    id: clis
+    attributes:
+      label: Which CLIs are installed and signed in?
+      options:
+        - label: Claude Code
+        - label: Codex CLI
+        - label: Cursor CLI
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What the ring / detail card shows vs. what you expected.
+    validations: { required: true }
+  - type: textarea
+    id: json
+    attributes:
+      label: Response JSON (if an endpoint changed shape)
+      description: "**Redact first** — remove tokens, account ids and e-mail addresses."
+      render: json

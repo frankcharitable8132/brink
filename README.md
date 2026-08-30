@@ -40,7 +40,7 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Requirements
 
-- **macOS** 13 Ventura or later — or **Windows** 10 (1809+) / 11, see [Windows](#windows)
+- **macOS** 13 Ventura or later, Apple Silicon or Intel (the DMG is a universal binary) — or **Windows** 10 (1809+) / 11 x64, see [Windows](#windows)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) and/or [Cursor CLI](https://cursor.com/cli) (`cursor-agent login`) — whichever you use, logged in
 - To build from source: Xcode Command Line Tools (`xcode-select --install`)
 
@@ -51,9 +51,35 @@ No Dock icon, no menu bar clutter. Just the edge.
 Grab `Brink.dmg` from the [latest release](../../releases/latest), open it and
 drag **Brink** to **Applications**.
 
-The app is not yet notarized. On first launch macOS will complain about an
-unidentified developer: **right-click → Open**, or allow it in
-*System Settings → Privacy & Security*.
+Or with Homebrew (from [this tap](https://github.com/semihtalii/homebrew-brink); Brink isn't in `homebrew-cask` yet — that needs notarization first):
+
+```bash
+brew tap semihtalii/brink
+brew trust semihtalii/brink     # Homebrew 6+ asks this once for third-party taps
+brew install --cask brink
+```
+
+The cask strips the quarantine flag for you, so the Gatekeeper step below isn't needed.
+
+The app is not yet notarized (no Apple Developer account yet), so macOS blocks
+the first launch. On **macOS 15 Sequoia and later** the old right-click → Open
+trick no longer works; do this instead:
+
+1. Double-click Brink once — macOS says it can't be opened. Click **Done**.
+2. Open *System Settings → Privacy & Security*, scroll down to **Security** and
+   click **Open Anyway** next to Brink (the button only shows for about an hour
+   after the blocked attempt; launch it again if it's gone).
+3. Confirm with your password. You only do this once.
+
+Or skip the dialogs entirely from a terminal:
+
+```bash
+xattr -d com.apple.quarantine /Applications/Brink.app
+```
+
+Every release ships a `SHA256SUMS` file and a GitHub build attestation, so you
+can check the DMG came from this repo's CI:
+`gh attestation verify Brink.dmg -R semihtalii/brink`.
 
 ### Build from source
 
@@ -75,8 +101,14 @@ there is no Liquid Glass on Windows).
 
 **Install:** grab `Brink-Windows-x64.zip` from the
 [latest release](../../releases/latest), unzip, run `Brink.exe`. It's a single
-self-contained file — no .NET install needed. The exe is not code-signed yet, so
-SmartScreen may warn on first run: **More info → Run anyway**.
+self-contained file — no .NET install needed (x64 only for now). The exe is not
+code-signed yet, so SmartScreen may warn on first run: **More info → Run anyway**.
+
+A `winget install SemihTali.Brink` manifest is prepared in
+[`packaging/winget/`](packaging/winget/) and will work once it's merged into winget-pkgs.
+
+**Uninstall:** quit Brink, delete `Brink.exe` and `%APPDATA%\Brink\`. If you
+enabled *Launch at login*, turn it off first (it's a `HKCU\...\Run` entry).
 
 **Credentials it reads** (never written, never sent anywhere but the vendor):
 
@@ -107,8 +139,12 @@ to ask Anthropic for your usage numbers. It is never sent anywhere else.
 | Right-click panel or card | **Refresh now** · **Providers** · **Appearance** · **Language** · **Launch at login** · **Notifications** · **Test notification** · **Quit Brink** |
 | Move the mouse far from the edge | Panel folds away by itself |
 
-If a CLI is not installed or not logged in, its ring shows **DEMO** data so you
-can still see the UI.
+Providers you're not signed in to are hidden. If nothing is signed in, a single
+**?** ring tells you what to install; turn a provider on under **Providers** to
+see a DEMO ring anyway.
+
+**Uninstall (macOS):** quit Brink, delete `/Applications/Brink.app` and
+`~/Library/Application Support/Brink/`. Nothing else is written.
 
 ## How it works
 
@@ -151,13 +187,18 @@ can still see the UI.
 
 ## How Brink compares
 
-| | Brink | llmquota | ccusage |
-|---|---|---|---|
-| Form | Edge panel (GUI), macOS + Windows | Terminal TUI | Terminal report |
-| Providers | Claude Code, Codex | Claude, Codex, Cursor, Grok… | Claude Code |
-| Setup | Open the app | Node 22 + npm | Node + npm |
-| Needs API key | No | No | No |
-| Always visible | Hover the edge | Only while running | Only while running |
+| | Brink | [CodexBar](https://github.com/steipete/CodexBar) | [ClaudeBar](https://github.com/tddworks/ClaudeBar) | [ccusage](https://github.com/ryoppippi/ccusage) |
+|---|---|---|---|---|
+| Form | Edge panel, hidden until you need it | Menu bar item | Menu bar item | Terminal report |
+| Platforms | **macOS + Windows** | macOS 14+ (community Windows port) | macOS | Anywhere with Node |
+| Providers | Claude Code, Codex, Cursor | 60+ | Claude Code | Claude Code |
+| Setup | Open the app | Open the app | Open the app | Node + npm |
+| Needs API key | No | No | No | No |
+| Size / scope | Small on purpose | Big, many options | Medium | CLI |
+
+CodexBar is the most complete macOS monitor; pick it if you want dozens of
+providers in the menu bar. Brink is for people who want nothing in the menu bar
+at all, and the same app on their Windows machine.
 
 ## Project layout
 
@@ -177,9 +218,10 @@ Sources/Brink/
   Resources/                  provider logos, <lang>.lproj/Localizable.strings
   ClaudeProvider.swift        Claude usage source
   CodexProvider.swift         Codex usage source
+  CursorProvider.swift        Cursor usage source
 ```
 
-Adding a provider (Cursor, Gemini CLI, …) means implementing the
+Adding a provider (Gemini CLI, Copilot, …) means implementing the
 `UsageProvider` protocol and appending it to the list in `main.swift`.
 Adding a language is one file: copy `Resources/en.lproj/Localizable.strings`
 to `<code>.lproj/`, translate the right-hand side, and add the code to

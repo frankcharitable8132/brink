@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+PackageIdentifier: SemihTali.Brink
+PackageVersion: 0.5.0
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+  - RelativeFilePath: Brink.exe
+    PortableCommandAlias: brink
+MinimumOSVersion: 10.0.17763.0
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/semihtalii/brink/releases/download/v0.5.0/Brink-Windows-x64.zip
+    InstallerSha256: 7684921826FAFA5894ECEB455508ECAFEB916DB34A9DABC9F4C02716AAC67B9E
+ReleaseDate: 2026-08-30
+ManifestType: installer
+ManifestVersion: 1.10.0

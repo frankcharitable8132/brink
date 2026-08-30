@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+PackageIdentifier: SemihTali.Brink
+PackageVersion: 0.5.0
+PackageLocale: en-US
+Publisher: Semih Tali
+PublisherUrl: https://github.com/semihtalii
+PublisherSupportUrl: https://github.com/semihtalii/brink/issues
+PackageName: Brink
+PackageUrl: https://github.com/semihtalii/brink
+License: MIT
+LicenseUrl: https://github.com/semihtalii/brink/blob/main/LICENSE
+ShortDescription: Claude Code, Codex and Cursor usage limits on the edge of your screen
+Description: |-
+  A tiny panel that lives on the right edge of your screen and shows your Claude Code, Codex and Cursor usage limits at a glance. Move the mouse to the edge, the panel slides out; hover a ring for session and weekly limits with reset times. Reads the CLIs' existing logins - no API keys, no accounts, no telemetry.
+Moniker: brink
+Tags:
+  - claude-code
+  - codex
+  - cursor
+  - usage
+  - rate-limit
+  - developer-tools
+ReleaseNotesUrl: https://github.com/semihtalii/brink/releases/tag/v0.5.0
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

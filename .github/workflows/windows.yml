@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -32,14 +34,31 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path publish\Brink.exe -DestinationPath Brink-Windows-x64.zip -Force
 
+      - name: Checksums
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash Brink-Windows-x64.zip -Algorithm SHA256).Hash.ToLower()
+          "$h  Brink-Windows-x64.zip" | Out-File -Encoding ascii SHA256SUMS-Windows.txt
+          Get-Content SHA256SUMS-Windows.txt
+
+      - name: Attest build provenance
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: windows/Brink-Windows-x64.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Brink-Windows-x64
-          path: windows/Brink-Windows-x64.zip
+          path: |
+            windows/Brink-Windows-x64.zip
+            windows/SHA256SUMS-Windows.txt
 
       - name: Attach to GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: windows/Brink-Windows-x64.zip
+          files: |
+            windows/Brink-Windows-x64.zip
+            windows/SHA256SUMS-Windows.txt
