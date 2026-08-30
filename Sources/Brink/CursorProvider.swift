@@ -67,6 +67,7 @@ struct CursorProvider: UsageProvider {
         request.setValue("WorkosCursorSessionToken=\(userId)%3A%3A\(token)",
                          forHTTPHeaderField: "Cookie")
         request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 15
         let (data, response) = try await URLSession.shared.data(for: request)
         return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
     }
@@ -123,8 +124,25 @@ struct CursorProvider: UsageProvider {
     private static var lastKeychainAttempt: Date?
     private static let keychainRetryInterval: TimeInterval = 10 * 60
 
+    /// Lookup order, chosen so the macOS Keychain prompt appears at most once:
+    ///  1) in-memory cache
+    ///  2) Brink's own copy (mode 0600) — survives relaunches *and* rebuilds, which
+    ///     matter here: an ad-hoc signature changes on every build and macOS then
+    ///     treats the app as a different program, re-asking for Keychain access
+    ///  3) the Keychain itself — the only step that can prompt
+    /// The refresh token is never read; refreshing it would log the user out of
+    /// `cursor-agent`.
     static func loadToken() -> String? {
         if let cached = tokenCache { return cached }
+
+        if let data = try? Data(contentsOf: ownStoreURL),
+           let token = String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !token.isEmpty {
+            tokenCache = token
+            return token
+        }
+
         // Don't hammer the Keychain (and the user with prompts) if it keeps failing.
         if let last = lastKeychainAttempt, Date().timeIntervalSince(last) < keychainRetryInterval {
             return nil
@@ -139,7 +157,25 @@ struct CursorProvider: UsageProvider {
             return nil
         }
         tokenCache = token
+        saveOwnCopy(token)
         return token
+    }
+
+    // MARK: Own token cache (~/Library/Application Support/Brink/cursor-token)
+
+    static var ownStoreURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            .appendingPathComponent("Brink", isDirectory: true)
+            .appendingPathComponent("cursor-token")
+    }
+
+    static func saveOwnCopy(_ token: String) {
+        let dir = ownStoreURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true,
+                                                 attributes: [.posixPermissions: 0o700])
+        try? Data(token.utf8).write(to: ownStoreURL, options: .atomic)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600],
+                                               ofItemAtPath: ownStoreURL.path)
     }
 
     /// The numeric Cursor userId lives in ~/.cursor/cli-config.json under
@@ -166,5 +202,6 @@ struct CursorProvider: UsageProvider {
     static func clearCache() {
         tokenCache = nil
         lastKeychainAttempt = nil
+        try? FileManager.default.removeItem(at: ownStoreURL)
     }
 }

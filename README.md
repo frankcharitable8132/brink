@@ -30,6 +30,8 @@ No Dock icon, no menu bar clutter. Just the edge.
   what's behind it, so type stays legible over a white web page and a dark wallpaper
   alike. On macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
 - Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
+- **What used it** — the Claude card can break the current session down by project,
+  so you can see which repo spent the limit (macOS only for now)
 - **Notifications** when a limit fills up — and again the moment it resets (scheduled for the reset time, so it arrives even if the app is idle)
 - **10 languages** — follows your macOS language automatically (English, Türkçe, Deutsch, Français, Español, Português (Brasil), Italiano, 日本語, 简体中文, 한국어); override in the menu
 - Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
@@ -157,6 +159,38 @@ see a DEMO ring anyway.
 - **Cursor** — reads the Cursor CLI session token (Keychain `cursor-access-token`)
   and the user id from `~/.cursor/cli-config.json`, then calls
   `cursor.com/api/usage-summary`.
+
+## What used it
+
+The limit tells you how much is gone. Brink also answers the follow-up: *which
+project spent it?*
+
+Under the Claude card there's one quiet line — `This session · brink · 4.1%` —
+that expands into a per-project breakdown. It works by pairing each observed
+rise in your limit with the turns that happened in the same interval, weighting
+them by tokens, and splitting the rise between the projects involved. Nothing is
+estimated from a price table; only what actually moved the number is assigned.
+
+Consumption that no local session explains — claude.ai, another machine, a
+background job — is shown as **Elsewhere** rather than hidden or spread around.
+
+**What it reads.** Claude Code already writes a transcript per session under
+`~/.claude/projects`. Brink opens those files and takes *only* these fields:
+
+```
+timestamp · cwd · gitBranch · sessionId · requestId · version
+message.model · message.usage.{input,output,cache_read,cache_creation}_tokens
+```
+
+It never reads `message.content`, tool results, or attachments, and never
+descends into the `tool-results/` and `subagents/` directories. Transcripts can
+contain secrets an agent read from a project; none of that is touched, stored or
+sent. The database (`~/Library/Application Support/Brink/agentcost.sqlite`) holds
+token counts, model names, branch names and project paths — nothing else, and it
+never leaves the machine.
+
+Sessions started in subfolders of one repository are grouped by their git root,
+so a project shows up once rather than as `Sources`, `docs` and `windows`.
 
 ### Security & privacy
 

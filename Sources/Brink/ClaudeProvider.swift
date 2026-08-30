@@ -141,6 +141,7 @@ struct ClaudeProvider: UsageProvider {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 15
         let (data, response) = try await URLSession.shared.data(for: request)
         let http = response as? HTTPURLResponse
         return (data, http?.statusCode ?? 0, http)

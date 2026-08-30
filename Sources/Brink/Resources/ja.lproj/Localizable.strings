@@ -49,3 +49,13 @@
 /* Empty state */
 "No CLI found" = "CLI が見つかりません";
 "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink はローカルのログイン情報を読み取ります。Claude Code、Codex CLI、Cursor CLI のいずれかにサインインすると、リングが自動的に表示されます。";
+
+/* Cost breakdown */
+"This session" = "このセッション";
+"Elsewhere" = "この Mac 以外";
+"Other (%d)" = "その他 (%d)";
+"Not measured yet" = "まだ計測されていません";
+"Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes." = "Brink は上限の増加を、そのとき作業していたプロジェクトに対応づけます。最初の計測には数分かかります。";
+"Spent outside this Mac — claude.ai, another device, or a background job." = "この Mac の外で消費 — claude.ai、別のデバイス、またはバックグラウンド処理。";
+"%d turns · %d files" = "%d ターン · %d ファイル";
+"%d turns · %d files · %d skipped" = "%d ターン · %d ファイル · %d 件スキップ";

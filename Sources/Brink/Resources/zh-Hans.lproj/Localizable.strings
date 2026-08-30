@@ -49,3 +49,13 @@
 /* Empty state */
 "No CLI found" = "未找到 CLI";
 "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink 读取你本地的登录信息。登录 Claude Code、Codex CLI 或 Cursor CLI 后，对应的圆环会自动出现。";
+
+/* Cost breakdown */
+"This session" = "本次会话";
+"Elsewhere" = "其他来源";
+"Other (%d)" = "其他 (%d)";
+"Not measured yet" = "尚未测量";
+"Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes." = "Brink 会把额度的每次上升，对应到你当时正在处理的项目。首次测量需要几分钟。";
+"Spent outside this Mac — claude.ai, another device, or a background job." = "在这台 Mac 之外消耗 — claude.ai、其他设备或后台任务。";
+"%d turns · %d files" = "%d 轮 · %d 个文件";
+"%d turns · %d files · %d skipped" = "%d 轮 · %d 个文件 · 跳过 %d";

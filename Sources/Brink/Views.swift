@@ -286,6 +286,10 @@ struct SettingsMenuItems: View {
             set: { Notifier.shared.setEnabled($0) }
         ))
         Button(L("Test notification")) { Notifier.shared.sendTest() }
+        if let stats = CostModel.shared.statsLine() {
+            Divider()
+            Button(stats) { }.disabled(true)
+        }
         Divider()
         Button(L("Quit Brink")) { NSApp.terminate(nil) }
     }
@@ -384,6 +388,7 @@ struct DetailBubbleView: View {
 struct DetailCardContent: View {
     let snapshot: ProviderSnapshot
     let palette: Palette
+    @ObservedObject var costModel: CostModel = .shared
 
 
     var body: some View {
@@ -447,7 +452,133 @@ struct DetailCardContent: View {
                     .lineLimit(2)
                     .padding(.top, 10)
             }
+
+            // "What used it": only where we can measure it — the Claude card, with
+            // real data behind it.
+            if snapshot.id == "claude", !snapshot.isDemo, !snapshot.windows.isEmpty,
+               costModel.state != .unavailable {
+                CostSection(model: costModel, snapshot: snapshot, palette: palette)
+            }
         }
         .legibilityShadow(palette.textShadow)
+    }
+}
+
+
+// MARK: - Cost breakdown ("what used it")
+
+enum CostFormat {
+    /// Locale-aware percentage: "3,1 %" / "3.1%" / "%3,1" depending on language.
+    static func percent(_ value: Double) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .percent
+        f.maximumFractionDigits = value < 10 ? 1 : 0
+        if !L10n.override.isEmpty { f.locale = Locale(identifier: L10n.override) }
+        return f.string(from: NSNumber(value: value / 100)) ?? String(format: "%.1f%%", value)
+    }
+}
+
+/// A collapsed one-liner under the limit windows; expands into a per-project list.
+/// Kept deliberately quiet: the card is still about the limit, this is the footnote
+/// that answers "what used it".
+struct CostSection: View {
+    @ObservedObject var model: CostModel
+    let snapshot: ProviderSnapshot
+    let palette: Palette
+
+    private var accent: Color { snapshot.accent ?? UsageColor.claudeOrange }
+    private var maxPct: Double { model.rows.map(\.pct).max() ?? 1 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Rectangle()
+                .fill(palette.barTrack)
+                .frame(height: 1)
+                .padding(.top, 12)
+                .padding(.bottom, 9)
+
+            Button {
+                withAnimation(.easeOut(duration: 0.18)) { model.isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(L("This session"))
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundColor(palette.fg)
+                    Spacer(minLength: 8)
+                    if !model.isExpanded {
+                        if let top = model.rows.first {
+                            Text("\(top.displayName) · \(CostFormat.percent(top.pct))")
+                                .font(.system(size: 10.5))
+                                .foregroundColor(palette.soft)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        } else {
+                            Text(L("Not measured yet"))
+                                .font(.system(size: 10.5))
+                                .foregroundColor(palette.muted)
+                        }
+                    }
+                    Image(systemName: model.isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundColor(palette.muted)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if model.isExpanded {
+                if model.rows.isEmpty {
+                    Text(L("Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes."))
+                        .font(.system(size: 10))
+                        .foregroundColor(palette.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 7)
+                } else {
+                    ForEach(model.rows) { row in
+                        CostRow(row: row, maxPct: maxPct, accent: accent, palette: palette)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct CostRow: View {
+    let row: ProjectCost
+    let maxPct: Double
+    let accent: Color
+    let palette: Palette
+
+    private static let barWidth: CGFloat = 54
+
+    private var fraction: CGFloat {
+        CGFloat(min(max(row.pct / max(maxPct, 0.0001), 0), 1))
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(row.displayName)
+                .font(.system(size: 11))
+                .foregroundColor(row.isUnexplained ? palette.muted : palette.fg)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            Spacer(minLength: 4)
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 2).fill(palette.barTrack)
+                    .frame(width: Self.barWidth, height: 4)
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(row.isUnexplained ? palette.muted : accent)
+                    .frame(width: max(3, Self.barWidth * fraction), height: 4)
+            }
+            Text(CostFormat.percent(row.pct))
+                .font(.system(size: 10.5))
+                .monospacedDigit()
+                .foregroundColor(palette.soft)
+                .frame(width: 40, alignment: .trailing)
+        }
+        .padding(.top, 7)
+        .help(row.isUnexplained
+              ? L("Spent outside this Mac — claude.ai, another device, or a background job.")
+              : row.project)
     }
 }

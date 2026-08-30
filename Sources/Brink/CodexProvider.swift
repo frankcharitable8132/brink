@@ -23,6 +23,7 @@ struct CodexProvider: UsageProvider {
             request.setValue(account, forHTTPHeaderField: "ChatGPT-Account-Id")
         }
         request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 15
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)

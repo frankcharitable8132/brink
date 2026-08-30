@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-31
+
+### Added
+- **"What used it"** on the Claude card (macOS): a collapsible breakdown of the current session by project, built by attributing each observed rise in the limit to the turns that caused it. Consumption with no local explanation is shown as **Elsewhere**, never hidden. Reads only token counts from Claude Code's own transcripts — never message content, tool results or attachments — and stores them in a local SQLite database that never leaves the machine.
+- Sessions started in subfolders are grouped by git root, so each repository appears once.
+
+### Changed
+- Providers are now fetched in parallel and each ring updates as its own answer arrives, so one slow or rate-limited source no longer leaves the whole card blank. Every request has a 15 s timeout.
+- An open detail card now re-renders when new data arrives instead of showing the values it opened with.
+
 ## [0.5.2] - 2026-08-30
 
 ### Added
@@ -91,7 +101,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/semihtalii/brink/releases/tag/v0.6.0
 [0.5.2]: https://github.com/semihtalii/brink/releases/tag/v0.5.2
 [0.5.1]: https://github.com/semihtalii/brink/releases/tag/v0.5.1
 [0.5.0]: https://github.com/semihtalii/brink/releases/tag/v0.5.0

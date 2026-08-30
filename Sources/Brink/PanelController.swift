@@ -25,6 +25,8 @@ final class PanelController {
     private var panelHovered = false
     private var detailHovered = false
     private var visibilityObserver: AnyCancellable?
+    private var costObserver: AnyCancellable?
+    private var lastDetail: (id: String, ringCenterY: CGFloat)?
 
     init(store: UsageStore, themeStore: ThemeStore) {
         self.store = store
@@ -44,6 +46,21 @@ final class PanelController {
                 self.positionPanel(expanded: self.state.isExpanded)
             }
         }
+
+        // Anything that changes what the open card shows — a refreshed poll, the
+        // cost section expanding, its first rows landing — re-renders and
+        // re-measures it, so a card left open never shows stale numbers or clips.
+        let costChanged = CostModel.shared.$isExpanded.map { _ in () }.eraseToAnyPublisher()
+        let rowsChanged = CostModel.shared.$rows.map { _ in () }.eraseToAnyPublisher()
+        let dataChanged = store.$snapshots.map { _ in () }.eraseToAnyPublisher()
+        costObserver = Publishers.MergeMany(costChanged, rowsChanged, dataChanged)
+            .dropFirst(3)                      // the initial value of each
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self, let last = self.lastDetail, self.detail.visible else { return }
+                    self.showDetail(for: last.id, ringCenterY: last.ringCenterY)
+                }
+            }
 
         // BRINK_PREVIEW=1 → start expanded with the first card open (screenshots / design review).
         if ProcessInfo.processInfo.environment["BRINK_PREVIEW"] == "1" {
@@ -179,6 +196,7 @@ final class PanelController {
 
     private func showDetail(for id: String, ringCenterY: CGFloat) {
         guard let snap = themeStore.visible(store.snapshots).first(where: { $0.id == id }), let screen else { return }
+        lastDetail = (id, ringCenterY)
         let panelFrame = panel.frame
         let ringScreenY = panelFrame.maxY - ringCenterY   // SwiftUI global y is top-down
 

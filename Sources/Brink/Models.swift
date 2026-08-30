@@ -92,18 +92,32 @@ final class UsageStore: ObservableObject {
         refreshAll()
     }
 
+    /// Fetches every provider at once and publishes each result as it lands, so one
+    /// slow or rate-limited source never leaves the whole card blank. Rings keep
+    /// their previous values until their own provider answers.
     func refreshAll() {
+        let providers = self.providers
+        let order = providers.map(\.id)
         Task {
-            var results: [ProviderSnapshot] = []
-            for provider in providers {
-                let snap = await provider.fetch()
-                results.append(snap)
+            var latest = Dictionary(uniqueKeysWithValues: snapshots.map { ($0.id, $0) })
+            await withTaskGroup(of: ProviderSnapshot.self) { group in
+                for provider in providers {
+                    group.addTask { await provider.fetch() }
+                }
+                for await snap in group {
+                    latest[snap.id] = snap
+                    let ordered = order.compactMap { latest[$0] }
+                    await MainActor.run {
+                        self.snapshots = ordered
+                        self.lastRefresh = Date()
+                    }
+                }
             }
-            let final = results
+            // Notifications and limit attribution only once the picture is complete.
+            let final = order.compactMap { latest[$0] }
             await MainActor.run {
-                self.snapshots = final
-                self.lastRefresh = Date()
                 Notifier.shared.observe(final)
+                CostModel.shared.observe(final)
             }
         }
     }

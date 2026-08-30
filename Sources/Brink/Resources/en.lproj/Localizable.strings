@@ -60,3 +60,13 @@
 /* Empty state */
 "No CLI found" = "No CLI found";
 "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically.";
+
+/* Cost breakdown */
+"This session" = "This session";
+"Elsewhere" = "Elsewhere";
+"Other (%d)" = "Other (%d)";
+"Not measured yet" = "Not measured yet";
+"Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes." = "Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes.";
+"Spent outside this Mac — claude.ai, another device, or a background job." = "Spent outside this Mac — claude.ai, another device, or a background job.";
+"%d turns · %d files" = "%d turns · %d files";
+"%d turns · %d files · %d skipped" = "%d turns · %d files · %d skipped";

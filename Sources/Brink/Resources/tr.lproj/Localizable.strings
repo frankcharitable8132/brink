@@ -60,3 +60,13 @@
 /* Empty state */
 "No CLI found" = "CLI bulunamadı";
 "Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink yerel oturumlarını okur. Claude Code, Codex CLI ya da Cursor CLI ile giriş yap; halkası kendiliğinden belirir.";
+
+/* Cost breakdown */
+"This session" = "Bu oturumda";
+"Elsewhere" = "Başka yerde";
+"Other (%d)" = "Diğer (%d)";
+"Not measured yet" = "Henüz ölçülmedi";
+"Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes." = "Brink, limitindeki her artışı o sırada çalıştığın projeyle eşleştirir. İlk ölçüm birkaç dakika sürer.";
+"Spent outside this Mac — claude.ai, another device, or a background job." = "Bu Mac'in dışında harcandı — claude.ai, başka bir cihaz ya da arka plan işi.";
+"%d turns · %d files" = "%d tur · %d dosya";
+"%d turns · %d files · %d skipped" = "%d tur · %d dosya · %d atlandı";
