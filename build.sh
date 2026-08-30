@@ -21,8 +21,10 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 ARM=".build/arm64-apple-macosx/release"
 X86=".build/x86_64-apple-macosx/release"
 lipo -create "$ARM/$APP_NAME" "$X86/$APP_NAME" -output "$APP/Contents/MacOS/$APP_NAME"
-# SwiftPM resource bundle (logos, .lproj) — Bundle.module looks for it in Contents/Resources
-cp -R "$ARM/${APP_NAME}_${APP_NAME}.bundle" "$APP/Contents/Resources/"
+# Resources (logos, <lang>.lproj) go straight into Contents/Resources and are read
+# via Bundle.main — the standard macOS layout. (SwiftPM's Bundle.module accessor
+# only knows the build machine's path and the .app root; see issue #8.)
+cp -R "Sources/${APP_NAME}/Resources/." "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -32,8 +34,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleName</key><string>$APP_NAME</string>
     <key>CFBundleDisplayName</key><string>$APP_NAME</string>
     <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-    <key>CFBundleVersion</key><string>6</string>
-    <key>CFBundleShortVersionString</key><string>0.5.0</string>
+    <key>CFBundleVersion</key><string>7</string>
+    <key>CFBundleShortVersionString</key><string>0.5.1</string>
     <key>CFBundleExecutable</key><string>$APP_NAME</string>
     <key>CFBundleDevelopmentRegion</key><string>en</string>
     <key>CFBundleLocalizations</key>

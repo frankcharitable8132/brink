@@ -5,6 +5,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-30
+
+### Fixed
+- **macOS: the app crashed on launch on every Mac except the build machine** (#8). Resources are now shipped in `Contents/Resources` and read via `Bundle.main` instead of SwiftPM's `Bundle.module`, whose accessor only knew the build machine's path. Thanks @nadalpiantini for the precise report.
+
 ### Added
 - Homebrew tap: `brew tap semihtalii/brink && brew install --cask brink` (cask strips quarantine, no Gatekeeper dance).
 - winget manifest under `packaging/winget/` (`SemihTali.Brink`, pending submission to winget-pkgs).
@@ -81,7 +86,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/semihtalii/brink/releases/tag/v0.5.1
 [0.5.0]: https://github.com/semihtalii/brink/releases/tag/v0.5.0
 [0.4.0]: https://github.com/semihtalii/brink/releases/tag/v0.4.0
 [0.3.1]: https://github.com/semihtalii/brink/releases/tag/v0.3.1

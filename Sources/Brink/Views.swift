@@ -120,7 +120,7 @@ struct ProviderIcon: View {
     private static let logos: [String: NSImage] = {
         var dict: [String: NSImage] = [:]
         for (key, file) in [("claude", "claude"), ("codex", "openai"), ("cursor", "cursor")] {
-            if let url = Bundle.module.url(forResource: file, withExtension: "png"),
+            if let url = L10n.resources.url(forResource: file, withExtension: "png"),
                let img = NSImage(contentsOf: url) {
                 img.isTemplate = true
                 dict[key] = img

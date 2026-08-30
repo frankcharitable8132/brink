@@ -8,6 +8,18 @@ import Foundation
 enum L10n {
     static let overrideKey = "language"   // "" = system default, else a code below
 
+    /// Where Brink's resources (logos, .lproj folders) live.
+    ///
+    /// In the packaged app `build.sh` copies them into `Contents/Resources`, so
+    /// `Bundle.main` serves them the standard macOS way. Only when running straight
+    /// from `swift build` (no .app) do we fall back to SwiftPM's `Bundle.module`.
+    /// Never touch `Bundle.module` first: its accessor only knows the build-machine
+    /// path and the .app root, and crashes on any other Mac (issue #8).
+    static let resources: Bundle = {
+        if Bundle.main.url(forResource: "claude", withExtension: "png") != nil { return Bundle.main }
+        return Bundle.module
+    }()
+
     /// (code, native name) — order shown in the menu.
     static let available: [(code: String, name: String)] = [
         ("en", "English"), ("tr", "Türkçe"), ("de", "Deutsch"), ("fr", "Français"),
@@ -33,12 +45,12 @@ enum L10n {
         let b: Bundle
         // SwiftPM lower-cases .lproj folder names (zh-Hans → zh-hans); try both.
         if !code.isEmpty,
-           let path = Bundle.module.path(forResource: code, ofType: "lproj")
-                   ?? Bundle.module.path(forResource: code.lowercased(), ofType: "lproj"),
+           let path = resources.path(forResource: code, ofType: "lproj")
+                   ?? resources.path(forResource: code.lowercased(), ofType: "lproj"),
            let lb = Bundle(path: path) {
             b = lb
         } else {
-            b = .module
+            b = resources
         }
         cachedBundle = b
         return b
