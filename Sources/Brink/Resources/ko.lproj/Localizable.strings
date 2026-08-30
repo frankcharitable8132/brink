@@ -34,3 +34,7 @@
 
 "just now" = "방금";
 "Providers" = "제공자";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "요청 제한 — 캐시된 사용량 표시 중, 약 %d분 후 재시도";
+"Rate limited (429) — retrying in ~%d min" = "요청 제한 (429) — 약 %d분 후 재시도";

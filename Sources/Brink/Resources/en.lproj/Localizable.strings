@@ -45,3 +45,7 @@
 
 "just now" = "just now";
 "Providers" = "Providers";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Rate limited — showing cached usage, retrying in ~%d min";
+"Rate limited (429) — retrying in ~%d min" = "Rate limited (429) — retrying in ~%d min";

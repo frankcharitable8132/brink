@@ -34,3 +34,7 @@
 
 "just now" = "agora mesmo";
 "Providers" = "Provedores";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Limite de requisições — mostrando uso em cache, nova tentativa em ~%d min";
+"Rate limited (429) — retrying in ~%d min" = "Limite de requisições (429) — nova tentativa em ~%d min";

@@ -34,3 +34,7 @@
 
 "just now" = "刚刚";
 "Providers" = "服务商";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "已限流 — 显示缓存用量，约 %d 分钟后重试";
+"Rate limited (429) — retrying in ~%d min" = "已限流 (429) — 约 %d 分钟后重试";

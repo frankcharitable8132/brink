@@ -34,3 +34,7 @@
 
 "just now" = "à l'instant";
 "Providers" = "Fournisseurs";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Limite de débit — usage en cache affiché, nouvel essai dans ~%d min";
+"Rate limited (429) — retrying in ~%d min" = "Limite de débit (429) — nouvel essai dans ~%d min";

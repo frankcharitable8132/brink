@@ -34,3 +34,7 @@
 
 "just now" = "gerade eben";
 "Providers" = "Anbieter";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Ratenlimit — zwischengespeicherte Nutzung wird angezeigt, neuer Versuch in ~%d Min.";
+"Rate limited (429) — retrying in ~%d min" = "Ratenlimit (429) — neuer Versuch in ~%d Min.";

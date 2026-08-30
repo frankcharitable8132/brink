@@ -45,3 +45,7 @@
 
 "just now" = "az önce";
 "Providers" = "Sağlayıcılar";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Hız sınırı — önbellekteki kullanım gösteriliyor, ~%d dk sonra yeniden denenecek";
+"Rate limited (429) — retrying in ~%d min" = "Hız sınırı (429) — ~%d dk sonra yeniden denenecek";

@@ -34,3 +34,7 @@
 
 "just now" = "たった今";
 "Providers" = "プロバイダ";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "レート制限 — キャッシュした使用状況を表示中、約 %d 分後に再試行";
+"Rate limited (429) — retrying in ~%d min" = "レート制限 (429) — 約 %d 分後に再試行";

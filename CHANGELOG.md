@@ -5,6 +5,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-30
+
+### Fixed
+- Claude: on HTTP 429 the app now backs off for the `Retry-After` window and keeps showing the last good numbers instead of blanking the ring and re-polling. Thanks @fherryfherry (#2).
+- Translations for the new rate-limit messages in all 10 languages.
+
 ## [0.3.0] - 2026-08-29
 
 ### Added
@@ -49,7 +55,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/semihtalii/brink/releases/tag/v0.3.1
 [0.3.0]: https://github.com/semihtalii/brink/releases/tag/v0.3.0
 [0.2.0]: https://github.com/semihtalii/brink/releases/tag/v0.2.0
 [0.1.0]: https://github.com/semihtalii/brink/releases/tag/v0.1.0
