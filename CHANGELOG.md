@@ -5,6 +5,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-30
+
+### Added
+- **Brink for Windows** — native C# / WPF port in `windows/`, with the same rings, detail card, notifications, 10 languages, launch at login and provider handling. Ships as a single self-contained `Brink.exe` (`Brink-Windows-x64.zip`) built by GitHub Actions on every release.
+
 ## [0.4.0] - 2026-08-30
 
 ### Added
@@ -65,7 +70,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/semihtalii/brink/releases/tag/v0.5.0
 [0.4.0]: https://github.com/semihtalii/brink/releases/tag/v0.4.0
 [0.3.1]: https://github.com/semihtalii/brink/releases/tag/v0.3.1
 [0.3.0]: https://github.com/semihtalii/brink/releases/tag/v0.3.0

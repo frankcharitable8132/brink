@@ -3,11 +3,13 @@
 [![CI](https://github.com/semihtalii/brink/actions/workflows/ci.yml/badge.svg)](https://github.com/semihtalii/brink/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/semihtalii/brink?include_prereleases)](https://github.com/semihtalii/brink/releases/latest)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black)](#requirements)
+[![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-0078D4)](#windows)
+[![Windows build](https://github.com/semihtalii/brink/actions/workflows/windows.yml/badge.svg)](https://github.com/semihtalii/brink/actions/workflows/windows.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**Know when you're on the brink.** A tiny macOS panel that lives on the right
-edge of your screen and shows your **Claude Code**, **Codex** and **Cursor** usage limits
-at a glance.
+**Know when you're on the brink.** A tiny panel that lives on the right edge of
+your screen and shows your **Claude Code**, **Codex** and **Cursor** usage limits
+at a glance. **For macOS and Windows.**
 
 Move the mouse to the thin strip on the right edge → the panel slides out.
 Hover a ring → a card shows the session limit, weekly limits and reset times.
@@ -38,7 +40,7 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Requirements
 
-- macOS 13 Ventura or later
+- **macOS** 13 Ventura or later — or **Windows** 10 (1809+) / 11, see [Windows](#windows)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) and/or [Cursor CLI](https://cursor.com/cli) (`cursor-agent login`) — whichever you use, logged in
 - To build from source: Xcode Command Line Tools (`xcode-select --install`)
 
@@ -63,6 +65,29 @@ open dist/Brink.app
 ```
 
 `build.sh` produces both `dist/Brink.app` and `dist/Brink.dmg`.
+
+## Windows
+
+Brink for Windows is a native C# / WPF (.NET 8) port with the same behaviour:
+edge strip, rings, detail card, notifications, 10 languages, launch at login.
+Themes are **Black** and **System** (follows the Windows light/dark app theme;
+there is no Liquid Glass on Windows).
+
+**Install:** grab `Brink-Windows-x64.zip` from the
+[latest release](../../releases/latest), unzip, run `Brink.exe`. It's a single
+self-contained file — no .NET install needed. The exe is not code-signed yet, so
+SmartScreen may warn on first run: **More info → Run anyway**.
+
+**Credentials it reads** (never written, never sent anywhere but the vendor):
+
+| Provider | Where |
+|---|---|
+| Claude Code | `%USERPROFILE%\.claude\.credentials.json`, else Credential Manager `Claude Code-credentials` |
+| Codex CLI | `%CODEX_HOME%\auth.json` or `%USERPROFILE%\.codex\auth.json` |
+| Cursor CLI | `%USERPROFILE%\.cursor\cli-config.json`, else Credential Manager `cursor-access-token` |
+
+Settings and an error log live in `%APPDATA%\Brink\`. Source is in
+[`windows/`](windows/); build with `dotnet build windows/Brink.csproj -c Release`.
 
 ## First launch
 
@@ -122,13 +147,13 @@ can still see the UI.
   [llmquota](https://github.com/0xNyk/llmquota) or [ccusage](https://github.com/ryoppippi/ccusage).
 - You need token-level cost accounting → this only shows the percentage windows
   the vendors expose.
-- You're on Linux/Windows → Brink is macOS-only (NSPanel + Keychain).
+- You're on Linux → Brink is macOS and Windows only.
 
 ## How Brink compares
 
 | | Brink | llmquota | ccusage |
 |---|---|---|---|
-| Form | Edge panel (GUI) | Terminal TUI | Terminal report |
+| Form | Edge panel (GUI), macOS + Windows | Terminal TUI | Terminal report |
 | Providers | Claude Code, Codex | Claude, Codex, Cursor, Grok… | Claude Code |
 | Setup | Open the app | Node 22 + npm | Node + npm |
 | Needs API key | No | No | No |
@@ -137,6 +162,7 @@ can still see the UI.
 ## Project layout
 
 ```
+windows/                      Brink for Windows (C# / WPF, .NET 8) — see windows/README.md
 Package.swift                 Swift Package (macOS 13+)
 build.sh                      build → .app + .dmg
 Sources/Brink/
@@ -157,7 +183,8 @@ Adding a provider (Cursor, Gemini CLI, …) means implementing the
 `UsageProvider` protocol and appending it to the list in `main.swift`.
 Adding a language is one file: copy `Resources/en.lproj/Localizable.strings`
 to `<code>.lproj/`, translate the right-hand side, and add the code to
-`L10n.available` and `build.sh`'s `CFBundleLocalizations`.
+`L10n.available` and `build.sh`'s `CFBundleLocalizations` (and mirror it in
+`windows/Resources/Strings/` — same keys, same format).
 
 For design work or screenshots, `BRINK_PREVIEW=1 dist/Brink.app/Contents/MacOS/Brink`
 starts the app expanded with the first card open.

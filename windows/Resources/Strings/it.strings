@@ -1,0 +1,51 @@
+"Current session" = "Sessione corrente";
+"All models" = "Tutti i modelli";
+"Weekly" = "Settimanale";
+"%@ Usage" = "Utilizzo %@";
+"%d%% Used" = "%d %% usato";
+"Resets soon" = "Reset imminente";
+"Resets in %d min" = "Reset tra %d min";
+"Resets in %d h" = "Reset tra %d h";
+"Resets in %d h %d min" = "Reset tra %d h %d min";
+"Resets %@" = "Reset %@";
+"DEMO" = "DEMO";
+"No data" = "Nessun dato";
+"Refresh now" = "Aggiorna ora";
+"Appearance" = "Aspetto";
+"Black" = "Nero";
+"Liquid Glass" = "Liquid Glass";
+"System" = "Sistema";
+"Launch at login" = "Apri al login";
+"Notifications" = "Notifiche";
+"Test notification" = "Notifica di prova";
+"Quit Brink" = "Esci da Brink";
+"Language" = "Lingua";
+"System default" = "Predefinita di sistema";
+"Claude Code credentials not found" = "Credenziali Claude Code non trovate";
+"Codex CLI credentials not found (~/.codex/auth.json)" = "Credenziali Codex CLI non trovate (~/.codex/auth.json)";
+"Unauthorized — open Claude Code once to refresh login" = "Non autorizzato — apri Claude Code una volta per rinnovare l'accesso";
+"Unauthorized — run `codex` once to refresh login" = "Non autorizzato — esegui `codex` una volta per rinnovare l'accesso";
+"No usage data in response" = "Nessun dato di utilizzo nella risposta";
+"HTTP %d" = "HTTP %d";
+"%@ — %@ limit reached" = "%@ — limite «%@» raggiunto";
+"You've used 100 %%.%@ I'll let you know when it resets." = "Hai usato il 100 %%.%@ Ti avviso quando viene azzerato.";
+"%@ — %@ reset" = "%@ — «%@» azzerato";
+"Your full limit is available again." = "Il tuo limite completo è di nuovo disponibile.";
+
+"just now" = "proprio ora";
+"Providers" = "Provider";
+
+/* Rate limit */
+"Rate limited — showing cached usage, retrying in ~%d min" = "Limite di richieste — mostro l’uso in cache, riprovo tra ~%d min";
+"Rate limited (429) — retrying in ~%d min" = "Limite di richieste (429) — riprovo tra ~%d min";
+/* Cursor */
+"Included usage" = "Utilizzo incluso";
+"Auto" = "Auto";
+"API" = "API";
+"On-demand" = "Su richiesta";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "Credenziali Cursor CLI non trovate — esegui `cursor-agent login`";
+"Unauthorized — run `cursor-agent login` to refresh" = "Non autorizzato — esegui `cursor-agent login` per aggiornare";
+
+/* Empty state */
+"No CLI found" = "Nessuna CLI trovata";
+"Brink reads your local logins. Sign in to Claude Code, Codex CLI or Cursor CLI and its ring appears automatically." = "Brink legge i tuoi accessi locali. Accedi a Claude Code, Codex CLI o Cursor CLI e il suo anello compare automaticamente.";

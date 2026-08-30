@@ -5,3 +5,7 @@ dist/
 .swiftpm/
 *.xcodeproj
 *.xcworkspace
+
+# Windows build output
+windows/bin/
+windows/obj/
