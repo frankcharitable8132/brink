@@ -25,6 +25,7 @@ lipo -create "$ARM/$APP_NAME" "$X86/$APP_NAME" -output "$APP/Contents/MacOS/$APP
 # via Bundle.main — the standard macOS layout. (SwiftPM's Bundle.module accessor
 # only knows the build machine's path and the .app root; see issue #8.)
 cp -R "Sources/${APP_NAME}/Resources/." "$APP/Contents/Resources/"
+cp "assets/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -34,9 +35,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleName</key><string>$APP_NAME</string>
     <key>CFBundleDisplayName</key><string>$APP_NAME</string>
     <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-    <key>CFBundleVersion</key><string>7</string>
-    <key>CFBundleShortVersionString</key><string>0.5.1</string>
+    <key>CFBundleVersion</key><string>8</string>
+    <key>CFBundleShortVersionString</key><string>0.5.2</string>
     <key>CFBundleExecutable</key><string>$APP_NAME</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundleDevelopmentRegion</key><string>en</string>
     <key>CFBundleLocalizations</key>
     <array><string>en</string><string>tr</string><string>de</string><string>fr</string><string>es</string><string>pt-BR</string><string>it</string><string>ja</string><string>zh-Hans</string><string>ko</string></array>

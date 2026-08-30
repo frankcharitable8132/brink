@@ -5,6 +5,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-08-30
+
+### Added
+- App icon on both platforms — `.icns` in the macOS bundle, multi-size `.ico` embedded in `Brink.exe`.
+
 ## [0.5.1] - 2026-08-30
 
 ### Fixed
@@ -86,7 +91,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Security
 - Only the short-lived access token and its expiry are cached locally (`0600`). Refresh tokens are never stored and Brink never refreshes tokens itself, so it cannot invalidate Claude Code's session.
 
-[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/semihtalii/brink/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/semihtalii/brink/releases/tag/v0.5.2
 [0.5.1]: https://github.com/semihtalii/brink/releases/tag/v0.5.1
 [0.5.0]: https://github.com/semihtalii/brink/releases/tag/v0.5.0
 [0.4.0]: https://github.com/semihtalii/brink/releases/tag/v0.4.0

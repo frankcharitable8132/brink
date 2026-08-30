@@ -9,7 +9,8 @@
     <AssemblyName>Brink</AssemblyName>
     <RootNamespace>Brink</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.5.0</Version>
+    <ApplicationIcon>Resources\brink.ico</ApplicationIcon>
+    <Version>0.5.2</Version>
     <Description>Claude Code, Codex and Cursor usage limits at a glance, from the screen edge.</Description>
   </PropertyGroup>
 
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Strings\*.strings" />
+    <None Remove="Resources\brink.ico" />
     <Resource Include="Resources\Images\*.png" />
   </ItemGroup>
 
