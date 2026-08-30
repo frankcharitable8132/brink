@@ -12,6 +12,10 @@ import Security
 ///   (Claude Code keeps it fresh whenever it runs).
 /// - Only the short-lived access token (+ expiry) is cached locally, so the
 ///   Keychain prompt appears once, not on every refresh cycle.
+/// - The usage endpoint itself is shared with Claude Code's own `/usage`
+///   command, so it rate-limits fairly easily. On a 429, `fetch()` backs off
+///   for the `Retry-After` window and serves the last good snapshot instead
+///   of hammering the endpoint and blanking the ring.
 struct ClaudeProvider: UsageProvider {
     let id = "claude"
 
@@ -27,7 +31,21 @@ struct ClaudeProvider: UsageProvider {
         }
     }
 
+    // MARK: Response cache / 429 backoff
+    //
+    // The usage endpoint is shared with Claude Code's own `/usage` command and
+    // any other client polling it, so it rate-limits fairly easily. On a 429
+    // we stop hitting the network until Anthropic's own `Retry-After` window
+    // has passed, and meanwhile keep showing the last good numbers instead of
+    // blanking the ring out.
+    private static var cache: ProviderSnapshot?
+    private static var cooldownUntil: Date?
+
     func fetch() async -> ProviderSnapshot {
+        if let until = Self.cooldownUntil, Date() < until {
+            return Self.rateLimitedSnapshot(retryAt: until)
+        }
+
         var snap = ProviderSnapshot(id: id, name: "Claude",
                                     systemImage: "asterisk",
                                     windows: [], error: nil,
@@ -40,18 +58,24 @@ struct ClaudeProvider: UsageProvider {
         }
 
         do {
-            var (data, status) = try await Self.requestUsage(token: creds.accessToken)
+            var (data, status, response) = try await Self.requestUsage(token: creds.accessToken)
             if status == 401 {
                 // Claude Code rotated its token: drop our cache, re-read its store
                 // (Keychain / file) and retry once right away.
                 Self.clearOwnCopy()
                 if let fresh = Self.loadCredentials(), fresh.accessToken != creds.accessToken {
-                    (data, status) = try await Self.requestUsage(token: fresh.accessToken)
+                    (data, status, response) = try await Self.requestUsage(token: fresh.accessToken)
                 }
             }
             if status == 401 {
                 snap.error = L("Unauthorized — open Claude Code once to refresh login")
                 return snap
+            }
+            if status == 429 {
+                let retrySeconds = Self.retryAfterSeconds(response) ?? 60
+                let until = Date().addingTimeInterval(retrySeconds)
+                Self.cooldownUntil = until
+                return Self.rateLimitedSnapshot(retryAt: until)
             }
             guard status == 200 else {
                 snap.error = L("HTTP %d", status)
@@ -60,6 +84,8 @@ struct ClaudeProvider: UsageProvider {
             snap.windows = Self.parseUsage(data)
             snap.updatedAt = Date()
             if snap.windows.isEmpty { snap.error = L("No usage data in response") }
+            Self.cooldownUntil = nil
+            Self.cache = snap
             return snap
         } catch {
             snap.error = error.localizedDescription
@@ -67,14 +93,35 @@ struct ClaudeProvider: UsageProvider {
         }
     }
 
-    private static func requestUsage(token: String) async throws -> (Data, Int) {
+    /// While rate-limited, prefer the last good snapshot (still shows real
+    /// numbers) over a blank/error ring; falls back to an error if we never
+    /// had one yet.
+    private static func rateLimitedSnapshot(retryAt: Date) -> ProviderSnapshot {
+        let waitMin = max(1, Int(retryAt.timeIntervalSinceNow / 60))
+        if var snap = cache {
+            snap.error = L("Rate limited — showing cached usage, retrying in ~%d min", waitMin)
+            return snap
+        }
+        var snap = ProviderSnapshot(id: "claude", name: "Claude", systemImage: "asterisk",
+                                    windows: [], error: nil, accent: UsageColor.claudeOrange)
+        snap.error = L("Rate limited (429) — retrying in ~%d min", waitMin)
+        return snap
+    }
+
+    private static func retryAfterSeconds(_ response: HTTPURLResponse?) -> TimeInterval? {
+        guard let value = response?.value(forHTTPHeaderField: "Retry-After") else { return nil }
+        return TimeInterval(value)
+    }
+
+    private static func requestUsage(token: String) async throws -> (Data, Int, HTTPURLResponse?) {
         var request = URLRequest(url: usageURL)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("Brink/1.0", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await URLSession.shared.data(for: request)
-        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+        let http = response as? HTTPURLResponse
+        return (data, http?.statusCode ?? 0, http)
     }
 
     // MARK: Parsing
