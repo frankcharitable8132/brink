@@ -9,3 +9,4 @@ dist/
 # Windows build output
 windows/bin/
 windows/obj/
+release-notes.md
