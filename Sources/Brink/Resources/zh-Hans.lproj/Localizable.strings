@@ -38,3 +38,10 @@
 /* Rate limit */
 "Rate limited — showing cached usage, retrying in ~%d min" = "已限流 — 显示缓存用量，约 %d 分钟后重试";
 "Rate limited (429) — retrying in ~%d min" = "已限流 (429) — 约 %d 分钟后重试";
+/* Cursor */
+"Included usage" = "包含用量";
+"Auto" = "自动";
+"API" = "API";
+"On-demand" = "按需";
+"Cursor CLI credentials not found — run `cursor-agent login`" = "未找到 Cursor CLI 凭据 — 请运行 `cursor-agent login`";
+"Unauthorized — run `cursor-agent login` to refresh" = "未授权 — 请运行 `cursor-agent login` 刷新";

@@ -144,6 +144,8 @@ struct ProviderIcon: View {
                     ClaudeIcon().stroke(color, style: StrokeStyle(lineWidth: size * 0.1, lineCap: .round))
                 case "codex":
                     CodexIcon().stroke(color, style: StrokeStyle(lineWidth: size * 0.08, lineCap: .round, lineJoin: .round))
+                case "cursor":
+                    Image(systemName: "cursorarrow").font(.system(size: size * 0.8, weight: .semibold)).foregroundColor(color)
                 default:
                     Image(systemName: "sparkle").font(.system(size: size * 0.8, weight: .semibold)).foregroundColor(color)
                 }
