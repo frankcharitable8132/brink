@@ -10,6 +10,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Added
 - **"What used it"** on the Claude card (macOS): a collapsible breakdown of the current session by project, built by attributing each observed rise in the limit to the turns that caused it. Consumption with no local explanation is shown as **Elsewhere**, never hidden. Reads only token counts from Claude Code's own transcripts — never message content, tool results or attachments — and stores them in a local SQLite database that never leaves the machine.
 - Sessions started in subfolders are grouped by git root, so each repository appears once.
+- The rows always add up to the percentage on the card. Attribution can only observe rises while Brink is running, so anything it missed — the Mac asleep, the app closed, a period that began before Brink was ever launched — is spread across the turns recorded in that period instead of quietly going missing.
 
 ### Changed
 - Providers are now fetched in parallel and each ring updates as its own answer arrives, so one slow or rate-limited source no longer leaves the whole card blank. Every request has a 15 s timeout.

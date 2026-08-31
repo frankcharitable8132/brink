@@ -8,6 +8,15 @@ enum CostWindow: String {
     case session
     case weekly
 
+    /// How long one period of this window lasts. Used with the reset time the API
+    /// reports to find where the current period started.
+    var duration: TimeInterval {
+        switch self {
+        case .session: return 5 * 3600
+        case .weekly:  return 7 * 86400
+        }
+    }
+
     /// Maps a provider's window label (as parsed from the API) to a cost window.
     static func from(label: String) -> CostWindow? {
         switch label {
@@ -121,10 +130,11 @@ final class CostStore {
         CREATE INDEX IF NOT EXISTS ix_event_ts ON usage_event(ts);
         CREATE INDEX IF NOT EXISTS ix_event_project_ts ON usage_event(project, ts);
         CREATE TABLE IF NOT EXISTS quota_sample(
-          id     INTEGER PRIMARY KEY,
-          ts     INTEGER NOT NULL,
-          window TEXT    NOT NULL,
-          pct    REAL    NOT NULL
+          id        INTEGER PRIMARY KEY,
+          ts        INTEGER NOT NULL,
+          window    TEXT    NOT NULL,
+          pct       REAL    NOT NULL,
+          resets_at INTEGER
         );
         CREATE INDEX IF NOT EXISTS ix_sample_window_ts ON quota_sample(window, ts);
         CREATE TABLE IF NOT EXISTS attribution(
@@ -149,7 +159,10 @@ final class CostStore {
           reason TEXT    NOT NULL
         );
         """
-        return exec(schema)
+        _ = exec(schema)
+        // Databases from 0.6.0-dev predate resets_at; a no-op once the column exists.
+        exec("ALTER TABLE quota_sample ADD COLUMN resets_at INTEGER;")
+        return true
     }
 
     // MARK: Low-level helpers (queue-confined)
@@ -262,11 +275,11 @@ final class CostStore {
 
     /// Records one quota reading and attributes any increase since the last one.
     /// Called after every usage poll — no extra network traffic.
-    func recordSample(window: CostWindow, pct: Double, at date: Date = Date()) {
+    func recordSample(window: CostWindow, pct: Double, resetsAt: Date? = nil, at date: Date = Date()) {
         queue.sync {
             let ts = Int(date.timeIntervalSince1970)
             let prev = lastSample(window)
-            insertSample(window: window, pct: pct, ts: ts)
+            insertSample(window: window, pct: pct, ts: ts, resetsAt: resetsAt)
 
             guard let prev else { return }             // first sample: nothing to compare
             let delta = pct - prev.pct
@@ -281,21 +294,50 @@ final class CostStore {
         }
     }
 
-    private func lastSample(_ window: CostWindow) -> (ts: Int, pct: Double)? {
-        guard let st = prepare("SELECT ts, pct FROM quota_sample WHERE window=?1 ORDER BY ts DESC LIMIT 1") else { return nil }
+    private func lastSample(_ window: CostWindow) -> (ts: Int, pct: Double, resetsAt: Int?)? {
+        let sql = SELECT_LAST_SAMPLE
+        guard let st = prepare(sql) else { return nil }
         defer { sqlite3_finalize(st) }
         bind(st, 1, window.rawValue)
         guard sqlite3_step(st) == SQLITE_ROW else { return nil }
-        return (Int(sqlite3_column_int64(st, 0)), sqlite3_column_double(st, 1))
+        let resets = sqlite3_column_type(st, 2) == SQLITE_NULL ? nil : Int(sqlite3_column_int64(st, 2))
+        return (Int(sqlite3_column_int64(st, 0)), sqlite3_column_double(st, 1), resets)
     }
 
-    private func insertSample(window: CostWindow, pct: Double, ts: Int) {
-        guard let st = prepare("INSERT INTO quota_sample(ts, window, pct) VALUES(?1,?2,?3)") else { return }
+    private let SELECT_LAST_SAMPLE =
+        "SELECT ts, pct, resets_at FROM quota_sample WHERE window=?1 ORDER BY ts DESC LIMIT 1"
+
+    private func insertSample(window: CostWindow, pct: Double, ts: Int, resetsAt: Date?) {
+        guard let st = prepare("INSERT INTO quota_sample(ts, window, pct, resets_at) VALUES(?1,?2,?3,?4)") else { return }
         defer { sqlite3_finalize(st) }
         sqlite3_bind_int64(st, 1, Int64(ts))
         bind(st, 2, window.rawValue)
         sqlite3_bind_double(st, 3, pct)
+        if let resetsAt { sqlite3_bind_int64(st, 4, Int64(resetsAt.timeIntervalSince1970)) }
+        else { sqlite3_bind_null(st, 4) }
         sqlite3_step(st)
+    }
+
+    /// Token weight per project for the turns in (from, to].
+    private func weights(from: Int, to: Int) -> (byProject: [String: Double], total: Double) {
+        var byProject: [String: Double] = [:]
+        var total = 0.0
+        let sql = "SELECT project, input, output, cache_read, cache_write"
+                + " FROM usage_event WHERE ts > ?1 AND ts <= ?2"
+        guard let st = prepare(sql) else { return ([:], 0) }
+        defer { sqlite3_finalize(st) }
+        sqlite3_bind_int64(st, 1, Int64(from))
+        sqlite3_bind_int64(st, 2, Int64(to))
+        while sqlite3_step(st) == SQLITE_ROW {
+            let project = text(st, 0) ?? Self.unexplainedKey
+            let w = Double(sqlite3_column_int64(st, 1))
+                  + Double(sqlite3_column_int64(st, 2)) * Self.kOutput
+                  + Double(sqlite3_column_int64(st, 3)) * Self.kCacheRead
+                  + Double(sqlite3_column_int64(st, 4)) * Self.kCacheWrite
+            byProject[project, default: 0] += w
+            total += w
+        }
+        return (byProject, total)
     }
 
     private func insertBoundary(window: CostWindow, ts: Int) {
@@ -347,39 +389,19 @@ final class CostStore {
     }
 
     private func attribute(window: CostWindow, delta: Double, t0: Int, t1: Int) {
-        var weights: [String: (weight: Double, branch: String?)] = [:]
-        var total = 0.0
+        let (byProject, total) = weights(from: t0, to: t1)
 
-        if let st = prepare("""
-            SELECT project, branch, input, output, cache_read, cache_write
-            FROM usage_event WHERE ts > ?1 AND ts <= ?2
-            """) {
-            sqlite3_bind_int64(st, 1, Int64(t0))
-            sqlite3_bind_int64(st, 2, Int64(t1))
-            while sqlite3_step(st) == SQLITE_ROW {
-                let project = text(st, 0) ?? Self.unexplainedKey
-                let branch = text(st, 1)
-                let w = Double(sqlite3_column_int64(st, 2))
-                      + Double(sqlite3_column_int64(st, 3)) * Self.kOutput
-                      + Double(sqlite3_column_int64(st, 4)) * Self.kCacheRead
-                      + Double(sqlite3_column_int64(st, 5)) * Self.kCacheWrite
-                weights[project, default: (0, branch)].weight += w
-                total += w
-            }
-            sqlite3_finalize(st)
-        }
-
-        guard let st = prepare("""
-            INSERT INTO attribution(t0, t1, window, project, branch, delta_pct) VALUES(?1,?2,?3,?4,?5,?6)
-            """) else { return }
+        let sql = "INSERT INTO attribution(t0, t1, window, project, branch, delta_pct)"
+                + " VALUES(?1,?2,?3,?4,?5,?6)"
+        guard let st = prepare(sql) else { return }
         defer { sqlite3_finalize(st) }
 
-        func insert(project: String, branch: String?, pct: Double) {
+        func insert(project: String, pct: Double) {
             sqlite3_bind_int64(st, 1, Int64(t0))
             sqlite3_bind_int64(st, 2, Int64(t1))
             bind(st, 3, window.rawValue)
             bind(st, 4, project)
-            bind(st, 5, branch)
+            sqlite3_bind_null(st, 5)
             sqlite3_bind_double(st, 6, pct)
             sqlite3_step(st)
             sqlite3_reset(st)
@@ -388,19 +410,28 @@ final class CostStore {
         if total <= 0 {
             // Nothing local explains this consumption: claude.ai, another machine,
             // a background job. Surfaced honestly rather than hidden.
-            insert(project: Self.unexplainedKey, branch: nil, pct: delta)
+            insert(project: Self.unexplainedKey, pct: delta)
             return
         }
-        for (project, v) in weights {
-            insert(project: project, branch: v.branch, pct: delta * (v.weight / total))
+        for (project, weight) in byProject {
+            insert(project: project, pct: delta * (weight / total))
         }
     }
 
     // MARK: Reading
 
     /// Attribution for the current period of a window, largest first.
+    ///
+    /// Observed deltas only cover the stretches Brink was running for. Anything
+    /// else — the app closed, the Mac asleep, a period that began before Brink
+    /// was ever launched — would otherwise leave the list adding up to less than
+    /// the percentage on the card. The remainder is therefore spread across the
+    /// turns recorded in this period, so the rows always account for the whole of
+    /// what the card reports.
     func currentPeriod(window: CostWindow) -> [ProjectCost] {
         queue.sync {
+            var totals: [String: Double] = [:]
+
             var periodStart = 0
             if let st = prepare("SELECT MAX(ts) FROM period_boundary WHERE window=?1") {
                 bind(st, 1, window.rawValue)
@@ -409,22 +440,44 @@ final class CostStore {
                 }
                 sqlite3_finalize(st)
             }
-            guard let st = prepare("""
-                SELECT project, SUM(delta_pct) AS pct FROM attribution
-                WHERE window = ?1 AND t1 > ?2
-                GROUP BY project ORDER BY pct DESC
-                """) else { return [] }
-            defer { sqlite3_finalize(st) }
-            bind(st, 1, window.rawValue)
-            sqlite3_bind_int64(st, 2, Int64(periodStart))
-            var rows: [ProjectCost] = []
-            while sqlite3_step(st) == SQLITE_ROW {
-                let project = text(st, 0) ?? Self.unexplainedKey
-                rows.append(ProjectCost(project: project,
-                                        pct: sqlite3_column_double(st, 1),
-                                        isUnexplained: project == Self.unexplainedKey))
+
+            let latest = lastSample(window)
+            // A reset time is the firmer boundary: it tells us where this period
+            // began even if Brink never saw the reset happen.
+            if let resets = latest?.resetsAt {
+                periodStart = max(periodStart, resets - Int(window.duration))
             }
-            return rows
+
+            let sql = "SELECT project, SUM(delta_pct) FROM attribution"
+                    + " WHERE window = ?1 AND t1 > ?2 GROUP BY project"
+            if let st = prepare(sql) {
+                bind(st, 1, window.rawValue)
+                sqlite3_bind_int64(st, 2, Int64(periodStart))
+                while sqlite3_step(st) == SQLITE_ROW {
+                    totals[text(st, 0) ?? Self.unexplainedKey, default: 0] += sqlite3_column_double(st, 1)
+                }
+                sqlite3_finalize(st)
+            }
+
+            if let latest {
+                let observed = totals.values.reduce(0, +)
+                let gap = latest.pct - observed
+                if gap > 0.25, periodStart > 0 {
+                    let (byProject, total) = weights(from: periodStart, to: latest.ts)
+                    if total > 0 {
+                        for (project, weight) in byProject {
+                            totals[project, default: 0] += gap * (weight / total)
+                        }
+                    } else {
+                        totals[Self.unexplainedKey, default: 0] += gap
+                    }
+                }
+            }
+
+            return totals
+                .map { ProjectCost(project: $0.key, pct: $0.value,
+                                   isUnexplained: $0.key == Self.unexplainedKey) }
+                .sorted { $0.pct > $1.pct }
         }
     }
 

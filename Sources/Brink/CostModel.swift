@@ -51,14 +51,16 @@ final class CostModel: ObservableObject {
               let claude = snapshots.first(where: { $0.id == "claude" && !$0.isDemo })
         else { return }
 
-        let samples: [(CostWindow, Double)] = claude.windows.compactMap {
+        let samples: [(window: CostWindow, pct: Double, resetsAt: Date?)] = claude.windows.compactMap {
             guard let window = CostWindow.from(label: $0.label) else { return nil }
-            return (window, $0.usedPercent)
+            return (window, $0.usedPercent, $0.resetsAt)
         }
         guard !samples.isEmpty else { return }
 
         Task.detached(priority: .utility) {
-            for (window, pct) in samples { store.recordSample(window: window, pct: pct) }
+            for s in samples {
+                store.recordSample(window: s.window, pct: s.pct, resetsAt: s.resetsAt)
+            }
             await MainActor.run { self.reload() }
         }
     }

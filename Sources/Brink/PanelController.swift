@@ -149,6 +149,8 @@ final class PanelController {
     private let farAwayDistance: CGFloat = 480
 
     private func installFarAwayCollapse() {
+        // Preview mode holds the panel open on purpose (screenshots, design review).
+        guard ProcessInfo.processInfo.environment["BRINK_PREVIEW"] != "1" else { return }
         mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self, self.state.isExpanded, let screen = self.screen else { return }
