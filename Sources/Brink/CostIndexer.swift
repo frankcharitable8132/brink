@@ -92,6 +92,9 @@ final class CostIndexer {
         do { try handle.seek(toOffset: UInt64(offset)) } catch { return false }
         guard let data = try? handle.readToEnd(), !data.isEmpty else { return false }
 
+        // The directory name encodes the folder the session was started in, which
+        // is a better project key than a deep cwd when the git root is gone.
+        let folder = url.deletingLastPathComponent().lastPathComponent
         var events: [UsageEvent] = []
         var malformed = 0
         var consumed = 0
@@ -104,7 +107,7 @@ final class CostIndexer {
                 guard buf[i] == 0x0A else { continue }
                 if i > start {
                     let slice = UnsafeBufferPointer(rebasing: buf[start..<i])
-                    switch parse(slice) {
+                    switch parse(slice, folder: folder) {
                     case .event(let e): events.append(e)
                     case .malformed:    malformed += 1
                     case .skip:         break
@@ -139,7 +142,7 @@ final class CostIndexer {
     }()
     private lazy var isoPlain = ISO8601DateFormatter()
 
-    private func parse(_ line: UnsafeBufferPointer<UInt8>) -> ParseResult {
+    private func parse(_ line: UnsafeBufferPointer<UInt8>, folder: String) -> ParseResult {
         // Cheap pre-filter: most lines are user turns or attachments and never
         // reach the JSON parser.
         guard Self.contains(line, Self.marker) else { return .skip }
@@ -182,7 +185,7 @@ final class CostIndexer {
             ts: ts,
             sessionId: sessionId,
             dedupeKey: key,
-            project: projectRoot(for: cwd),
+            project: projectRoot(for: cwd, folder: folder),
             cwd: cwd,
             branch: branch,
             model: model,
@@ -217,10 +220,14 @@ final class CostIndexer {
     /// the cwd is walked up to its git root. A folder in one project directory can
     /// hold dozens of distinct cwds, which would otherwise fill the list with
     /// `Sources`, `windows`, `docs` rows. Falls back to the cwd itself.
-    private func projectRoot(for cwd: String) -> String {
-        if let cached = gitRootCache[cwd] { return cached }
+    private func projectRoot(for cwd: String, folder: String) -> String {
+        let key = folder + "\u{0}" + cwd
+        if let cached = gitRootCache[key] { return cached }
+
+        var result: String?
+
+        // 1. The git root, when the project is still on disk.
         var dir = URL(fileURLWithPath: cwd)
-        var result = cwd
         for _ in 0..<12 {
             if FileManager.default.fileExists(atPath: dir.appendingPathComponent(".git").path) {
                 result = dir.path
@@ -230,8 +237,22 @@ final class CostIndexer {
             if parent.path == dir.path || parent.path == "/" { break }
             dir = parent
         }
-        gitRootCache[cwd] = result
-        return result
+
+        // 2. Otherwise the transcript's directory name, which Claude Code derives
+        //    from where the session started by replacing every non-alphanumeric
+        //    character with "-". Matching it against the same transform of the cwd
+        //    recovers the real prefix without decoding anything, and rescues
+        //    deleted projects that would otherwise show up as a deep subfolder.
+        if result == nil, !folder.isEmpty, folder.count < cwd.count {
+            let normalized = String(cwd.map { $0.isASCII && ($0.isLetter || $0.isNumber) ? $0 : "-" })
+            if normalized.hasPrefix(folder) {
+                result = String(cwd.prefix(folder.count))
+            }
+        }
+
+        let resolved = result ?? cwd
+        gitRootCache[key] = resolved
+        return resolved
     }
 
     // MARK: Watching
