@@ -16,6 +16,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Changed
 - Providers are now fetched in parallel and each ring updates as its own answer arrives, so one slow or rate-limited source no longer leaves the whole card blank. Every request has a 15 s timeout.
 - An open detail card now re-renders when new data arrives instead of showing the values it opened with.
+- The Cursor token is cached like Claude's, so the Keychain prompt appears once rather than after every update.
+
+### Note
+- The breakdown is macOS only in this release. Windows keeps the rings, card, notifications and languages it already had.
 
 ## [0.5.2] - 2026-08-30
 
