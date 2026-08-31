@@ -70,3 +70,8 @@
 "Spent outside this Mac — claude.ai, another device, or a background job." = "Bu Mac'in dışında harcandı — claude.ai, başka bir cihaz ya da arka plan işi.";
 "%d turns · %d files" = "%d tur · %d dosya";
 "%d turns · %d files · %d skipped" = "%d tur · %d dosya · %d atlandı";
+
+/* Ranges */
+"This week" = "Bu hafta";
+"All time" = "Tüm zamanlar";
+"share of your total usage" = "toplam kullanımının payı";

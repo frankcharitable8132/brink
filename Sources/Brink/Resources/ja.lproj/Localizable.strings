@@ -59,3 +59,8 @@
 "Spent outside this Mac — claude.ai, another device, or a background job." = "この Mac の外で消費 — claude.ai、別のデバイス、またはバックグラウンド処理。";
 "%d turns · %d files" = "%d ターン · %d ファイル";
 "%d turns · %d files · %d skipped" = "%d ターン · %d ファイル · %d 件スキップ";
+
+/* Ranges */
+"This week" = "今週";
+"All time" = "全期間";
+"share of your total usage" = "総使用量に占める割合";

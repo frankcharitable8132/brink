@@ -70,3 +70,8 @@
 "Spent outside this Mac — claude.ai, another device, or a background job." = "Spent outside this Mac — claude.ai, another device, or a background job.";
 "%d turns · %d files" = "%d turns · %d files";
 "%d turns · %d files · %d skipped" = "%d turns · %d files · %d skipped";
+
+/* Ranges */
+"This week" = "This week";
+"All time" = "All time";
+"share of your total usage" = "share of your total usage";

@@ -55,7 +55,28 @@ struct ProjectCost: Identifiable {
     var displayName: String {
         if isUnexplained { return L("Elsewhere") }
         if mergedCount > 0 { return L("Other (%d)", mergedCount) }
-        return (project as NSString).lastPathComponent
+        return Self.shortName(for: project)
+    }
+
+    /// Folder names that say nothing on their own. When a path ends in one — which
+    /// happens whenever the git root could not be resolved, e.g. the project has
+    /// since been deleted — the parent is kept too, so the row reads "nodes/src"
+    /// rather than a bare "src". The full path is always in the tooltip.
+    private static let genericFolders: Set<String> = [
+        "src", "source", "sources", "lib", "libs", "app", "apps", "core", "common",
+        "shared", "packages", "package", "modules", "components", "dist", "build",
+        "out", "bin", "scripts", "assets", "public", "static", "docs", "doc",
+        "test", "tests", "spec", "api", "server", "client", "web", "windows",
+        "macos", "ios", "android", "main", "index", "utils", "util",
+    ]
+
+    static func shortName(for path: String) -> String {
+        let parts = path.split(separator: "/").map(String.init)
+        guard let last = parts.last else { return path }
+        if genericFolders.contains(last.lowercased()), parts.count >= 2 {
+            return parts[parts.count - 2] + "/" + last
+        }
+        return last
     }
 }
 
@@ -481,6 +502,28 @@ final class CostStore {
         }
     }
 
+    /// Token weight per project across every turn ever indexed.
+    func allWeights() -> (byProject: [String: Double], total: Double) {
+        queue.sync {
+            var byProject: [String: Double] = [:]
+            var total = 0.0
+            let sql = "SELECT project, SUM(input + output * ?1 + cache_read * ?2 + cache_write * ?3)"
+                    + " FROM usage_event GROUP BY project"
+            guard let st = prepare(sql) else { return ([:], 0) }
+            defer { sqlite3_finalize(st) }
+            sqlite3_bind_double(st, 1, Self.kOutput)
+            sqlite3_bind_double(st, 2, Self.kCacheRead)
+            sqlite3_bind_double(st, 3, Self.kCacheWrite)
+            while sqlite3_step(st) == SQLITE_ROW {
+                let project = text(st, 0) ?? Self.unexplainedKey
+                let w = sqlite3_column_double(st, 1)
+                byProject[project] = w
+                total += w
+            }
+            return (byProject, total)
+        }
+    }
+
     /// Diagnostics for the settings menu.
     func stats() -> (events: Int, files: Int, errors: Int) {
         queue.sync {
@@ -515,5 +558,58 @@ extension Array where Element == ProjectCost {
                                     pct: unexplained, isUnexplained: true))
         }
         return rows
+    }
+}
+
+// MARK: - Ranges
+
+/// What the breakdown is measured over.
+///
+/// The two limit windows report *percent of the limit* — the same number the card
+/// shows. All-time has no limit to measure against, so it reports each project's
+/// *share of total work* instead; both are percentages, and the UI says which.
+enum CostRange: String, CaseIterable, Identifiable {
+    case session
+    case weekly
+    case allTime
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .session: return L("This session")
+        case .weekly:  return L("This week")
+        case .allTime: return L("All time")
+        }
+    }
+
+    var window: CostWindow? {
+        switch self {
+        case .session: return .session
+        case .weekly:  return .weekly
+        case .allTime: return nil
+        }
+    }
+
+    /// True when percentages mean "share of your own usage", not "share of the limit".
+    var isShare: Bool { self == .allTime }
+}
+
+extension CostStore {
+    /// Every project's share of all recorded work, as a percentage summing to 100.
+    /// Read straight from the turns, so it covers everything indexed — including
+    /// periods that ended long ago.
+    func allTimeShare() -> [ProjectCost] {
+        let (byProject, total) = allWeights()
+        guard total > 0 else { return [] }
+        return byProject
+            .map { ProjectCost(project: $0.key, pct: $0.value / total * 100,
+                               isUnexplained: $0.key == Self.unexplainedKey) }
+            .sorted { $0.pct > $1.pct }
+    }
+
+    func rows(for range: CostRange) -> [ProjectCost] {
+        if let window = range.window { return currentPeriod(window: window) }
+        return allTimeShare()
     }
 }

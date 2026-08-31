@@ -24,12 +24,22 @@ final class CostModel: ObservableObject {
         didSet { UserDefaults.standard.set(isExpanded, forKey: Self.expandedKey) }
     }
 
+    /// Which range the list is showing. Persisted, like the expanded state.
+    @Published var range: CostRange {
+        didSet {
+            UserDefaults.standard.set(range.rawValue, forKey: Self.rangeKey)
+            reload()
+        }
+    }
+
     private static let expandedKey = "costExpanded"
+    private static let rangeKey = "costRange"
     private let store: CostStore?
     private let indexer: CostIndexer?
 
     private init() {
         isExpanded = UserDefaults.standard.bool(forKey: Self.expandedKey)
+        range = CostRange(rawValue: UserDefaults.standard.string(forKey: Self.rangeKey) ?? "") ?? .session
 
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
             .appendingPathComponent("Brink", isDirectory: true)
@@ -67,8 +77,9 @@ final class CostModel: ObservableObject {
 
     func reload() {
         guard let store else { return }
+        let range = self.range
         Task.detached(priority: .utility) {
-            let fresh = store.currentPeriod(window: .session).presentable()
+            let fresh = store.rows(for: range).presentable()
             await MainActor.run {
                 self.rows = fresh
                 self.state = fresh.isEmpty ? .waiting : .ready

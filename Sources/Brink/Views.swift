@@ -501,7 +501,7 @@ struct CostSection: View {
                 withAnimation(.easeOut(duration: 0.18)) { model.isExpanded.toggle() }
             } label: {
                 HStack(spacing: 6) {
-                    Text(L("This session"))
+                    Text(model.range.title)
                         .font(.system(size: 11.5, weight: .medium))
                         .foregroundColor(palette.fg)
                     Spacer(minLength: 8)
@@ -527,6 +527,22 @@ struct CostSection: View {
             .buttonStyle(.plain)
 
             if model.isExpanded {
+                HStack(spacing: 10) {
+                    ForEach(CostRange.allCases) { range in
+                        let selected = range == model.range
+                        Button {
+                            model.range = range
+                        } label: {
+                            Text(range.title)
+                                .font(.system(size: 10, weight: selected ? .semibold : .regular))
+                                .foregroundColor(selected ? palette.fg : palette.muted)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, 8)
+
                 if model.rows.isEmpty {
                     Text(L("Brink matches every rise in your limit to the project you were working in. The first reading takes a few minutes."))
                         .font(.system(size: 10))
@@ -536,6 +552,14 @@ struct CostSection: View {
                 } else {
                     ForEach(model.rows) { row in
                         CostRow(row: row, maxPct: maxPct, accent: accent, palette: palette)
+                    }
+                    // All-time has no limit to measure against, so the numbers mean
+                    // something else — say so rather than let them look alike.
+                    if model.range.isShare {
+                        Text(L("share of your total usage"))
+                            .font(.system(size: 9.5))
+                            .foregroundColor(palette.muted)
+                            .padding(.top, 6)
                     }
                 }
             }
