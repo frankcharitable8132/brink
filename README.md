@@ -9,10 +9,11 @@
 
 **Know when you're on the brink.** A tiny panel that lives on the right edge of
 your screen and shows your **Claude Code**, **Codex** and **Cursor** usage limits
-at a glance. **For macOS and Windows.**
+at a glance — and, on macOS, **which project spent them**. **For macOS and Windows.**
 
 Move the mouse to the thin strip on the right edge → the panel slides out.
 Hover a ring → a card shows the session limit, weekly limits and reset times.
+One line at the bottom answers the follow-up question: *what used it?*
 
 No Dock icon, no menu bar clutter. Just the edge.
 
@@ -25,13 +26,14 @@ No Dock icon, no menu bar clutter. Just the edge.
 
 ## Features
 
+- **What used it** — break the limit down by project, over the current session, the
+  week, this month or all time. Built from the transcripts Claude Code already
+  writes; reads token counts only, never message content. macOS only for now.
 - Three looks: **Black**, **Liquid Glass** and **System**. On macOS 26+ the glass is
   Apple's real, adaptive Liquid Glass (`.glassEffect`): it turns light or dark from
   what's behind it, so type stays legible over a white web page and a dark wallpaper
   alike. On macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
 - Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
-- **What used it** — the Claude card can break the current session down by project,
-  so you can see which repo spent the limit (macOS only for now)
 - **Notifications** when a limit fills up — and again the moment it resets (scheduled for the reset time, so it arrives even if the app is idle)
 - **10 languages** — follows your macOS language automatically (English, Türkçe, Deutsch, Français, Español, Português (Brasil), Italiano, 日本語, 简体中文, 한국어); override in the menu
 - Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
