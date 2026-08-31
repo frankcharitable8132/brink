@@ -64,3 +64,11 @@
 "This week" = "이번 주";
 "All time" = "전체 기간";
 "share of your total usage" = "전체 사용량 중 비중";
+
+/* Month range + short picker labels */
+"This month" = "이번 달";
+"Session" = "세션";
+"Week" = "주";
+"Month" = "월";
+"All" = "전체";
+"share of the work in this range" = "이 기간 작업 중 비중";

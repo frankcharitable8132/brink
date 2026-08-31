@@ -64,3 +64,11 @@
 "This week" = "本周";
 "All time" = "全部时间";
 "share of your total usage" = "占总用量的比例";
+
+/* Month range + short picker labels */
+"This month" = "本月";
+"Session" = "会话";
+"Week" = "本周";
+"Month" = "本月";
+"All" = "全部";
+"share of the work in this range" = "该期间工作量的占比";

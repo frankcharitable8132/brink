@@ -64,3 +64,11 @@
 "This week" = "Esta semana";
 "All time" = "Desde o início";
 "share of your total usage" = "parte do seu uso total";
+
+/* Month range + short picker labels */
+"This month" = "Este mês";
+"Session" = "Sessão";
+"Week" = "Semana";
+"Month" = "Mês";
+"All" = "Tudo";
+"share of the work in this range" = "parte do trabalho neste período";

@@ -64,3 +64,11 @@
 "This week" = "今週";
 "All time" = "全期間";
 "share of your total usage" = "総使用量に占める割合";
+
+/* Month range + short picker labels */
+"This month" = "今月";
+"Session" = "セッション";
+"Week" = "週";
+"Month" = "月";
+"All" = "全体";
+"share of the work in this range" = "この期間の作業に占める割合";

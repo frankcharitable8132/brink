@@ -75,3 +75,11 @@
 "This week" = "This week";
 "All time" = "All time";
 "share of your total usage" = "share of your total usage";
+
+/* Month range + short picker labels */
+"This month" = "This month";
+"Session" = "Session";
+"Week" = "Week";
+"Month" = "Month";
+"All" = "All";
+"share of the work in this range" = "share of the work in this range";

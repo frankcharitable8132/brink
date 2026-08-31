@@ -9,7 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ### Added
 - **"What used it"** on the Claude card (macOS): a collapsible breakdown of the current session by project, built by attributing each observed rise in the limit to the turns that caused it. Consumption with no local explanation is shown as **Elsewhere**, never hidden. Reads only token counts from Claude Code's own transcripts — never message content, tool results or attachments — and stores them in a local SQLite database that never leaves the machine.
-- Range picker: **This session** and **This week** report percent of that limit; **All time** reports each project's share of your total recorded work, so past periods stay visible after a limit resets.
+- Range picker — **Session**, **Week**, **Month**, **All**. The first two are Anthropic's own limit windows and report percent of that limit, matching the card. Month and All have no limit behind them, so they report each project's share of the work in that range; the list says which, under the rows.
 - Sessions started in subfolders are grouped by git root, so each repository appears once.
 - The rows always add up to the percentage on the card. Attribution can only observe rises while Brink is running, so anything it missed — the Mac asleep, the app closed, a period that began before Brink was ever launched — is spread across the turns recorded in that period instead of quietly going missing.
 

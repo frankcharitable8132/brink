@@ -64,3 +64,11 @@
 "This week" = "Diese Woche";
 "All time" = "Gesamt";
 "share of your total usage" = "Anteil an deiner Gesamtnutzung";
+
+/* Month range + short picker labels */
+"This month" = "Diesen Monat";
+"Session" = "Sitzung";
+"Week" = "Woche";
+"Month" = "Monat";
+"All" = "Alle";
+"share of the work in this range" = "Anteil an der Arbeit in diesem Zeitraum";

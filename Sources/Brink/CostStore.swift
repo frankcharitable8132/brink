@@ -502,6 +502,11 @@ final class CostStore {
         }
     }
 
+    /// Queue-confined wrapper around the interval weighting, for the share views.
+    func weightsPublic(from: Int, to: Int) -> (byProject: [String: Double], total: Double) {
+        queue.sync { weights(from: from, to: to) }
+    }
+
     /// Token weight per project across every turn ever indexed.
     func allWeights() -> (byProject: [String: Double], total: Double) {
         queue.sync {
@@ -571,28 +576,55 @@ extension Array where Element == ProjectCost {
 enum CostRange: String, CaseIterable, Identifiable {
     case session
     case weekly
+    case month
     case allTime
 
     var id: String { rawValue }
 
+    /// Used as the section heading, where there is room for a full phrase.
     var title: String {
         switch self {
         case .session: return L("This session")
         case .weekly:  return L("This week")
+        case .month:   return L("This month")
         case .allTime: return L("All time")
         }
     }
 
+    /// Used in the picker, where four labels have to fit on one line.
+    var shortTitle: String {
+        switch self {
+        case .session: return L("Session")
+        case .weekly:  return L("Week")
+        case .month:   return L("Month")
+        case .allTime: return L("All")
+        }
+    }
+
+    /// The limit window this range measures, if any. Anthropic resets on a five
+    /// hour session and a seven day week; there is no monthly limit, so a month
+    /// can only be expressed as a share of the work done in it.
     var window: CostWindow? {
         switch self {
         case .session: return .session
         case .weekly:  return .weekly
-        case .allTime: return nil
+        case .month, .allTime: return nil
         }
     }
 
-    /// True when percentages mean "share of your own usage", not "share of the limit".
-    var isShare: Bool { self == .allTime }
+    /// Start of the range for the share-based views.
+    var start: Date? {
+        switch self {
+        case .month:
+            let cal = Calendar.current
+            return cal.date(from: cal.dateComponents([.year, .month], from: Date()))
+        default:
+            return nil
+        }
+    }
+
+    /// True when percentages mean "share of your own work", not "share of the limit".
+    var isShare: Bool { window == nil }
 }
 
 extension CostStore {
@@ -608,8 +640,20 @@ extension CostStore {
             .sorted { $0.pct > $1.pct }
     }
 
+    /// Share of the work recorded since a given moment, as percentages summing to 100.
+    func share(since: Date) -> [ProjectCost] {
+        let now = Int(Date().timeIntervalSince1970)
+        let (byProject, total) = weightsPublic(from: Int(since.timeIntervalSince1970), to: now)
+        guard total > 0 else { return [] }
+        return byProject
+            .map { ProjectCost(project: $0.key, pct: $0.value / total * 100,
+                               isUnexplained: $0.key == Self.unexplainedKey) }
+            .sorted { $0.pct > $1.pct }
+    }
+
     func rows(for range: CostRange) -> [ProjectCost] {
         if let window = range.window { return currentPeriod(window: window) }
+        if let start = range.start { return share(since: start) }
         return allTimeShare()
     }
 }

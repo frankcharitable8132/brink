@@ -527,13 +527,13 @@ struct CostSection: View {
             .buttonStyle(.plain)
 
             if model.isExpanded {
-                HStack(spacing: 10) {
+                HStack(spacing: 9) {
                     ForEach(CostRange.allCases) { range in
                         let selected = range == model.range
                         Button {
                             model.range = range
                         } label: {
-                            Text(range.title)
+                            Text(range.shortTitle)
                                 .font(.system(size: 10, weight: selected ? .semibold : .regular))
                                 .foregroundColor(selected ? palette.fg : palette.muted)
                                 .contentShape(Rectangle())
@@ -556,7 +556,7 @@ struct CostSection: View {
                     // All-time has no limit to measure against, so the numbers mean
                     // something else — say so rather than let them look alike.
                     if model.range.isShare {
-                        Text(L("share of your total usage"))
+                        Text(L("share of the work in this range"))
                             .font(.system(size: 9.5))
                             .foregroundColor(palette.muted)
                             .padding(.top, 6)

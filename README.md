@@ -171,9 +171,12 @@ rise in your limit with the turns that happened in the same interval, weighting
 them by tokens, and splitting the rise between the projects involved. Nothing is
 estimated from a price table; only what actually moved the number is assigned.
 
-Three ranges: **This session** and **This week** measure against those limits;
-**All time** shows each project's share of everything indexed, which survives a
-limit reset and reaches back as far as the transcripts do.
+Four ranges. **Session** and **Week** are Anthropic's own limit windows, so their
+percentages are percent *of the limit* and match the card. **Month** (calendar
+month) and **All** have no limit behind them — Anthropic resets on five hours and
+seven days, not monthly — so they show each project's share *of the work in that
+range*. The list says so under the rows, and these two survive a limit reset,
+reaching back as far as the transcripts do.
 
 Consumption that no local session explains — claude.ai, another machine, a
 background job — is shown as **Elsewhere** rather than hidden or spread around.

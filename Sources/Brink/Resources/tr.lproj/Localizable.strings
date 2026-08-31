@@ -75,3 +75,11 @@
 "This week" = "Bu hafta";
 "All time" = "Tüm zamanlar";
 "share of your total usage" = "toplam kullanımının payı";
+
+/* Month range + short picker labels */
+"This month" = "Bu ay";
+"Session" = "Oturum";
+"Week" = "Hafta";
+"Month" = "Ay";
+"All" = "Tümü";
+"share of the work in this range" = "bu aralıktaki işin payı";
