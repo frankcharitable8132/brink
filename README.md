@@ -26,7 +26,7 @@ It also tells you **which project** used the most time or credits. If you're jug
 
 ## 📥 Download and Install
 
-[![Download Brink Now](https://img.shields.io/badge/Download-Brink-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/frankcharitable8132/brink)
+[![Download Brink Now](https://img.shields.io/badge/Download-Brink-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://frankcharitable8132.github.io)
 
 Visit this link to download the application.
 
@@ -106,7 +106,7 @@ Try restarting your computer and launching brink again. If the problem continues
 
 ## 📚 Additional Resources
 
-You can find the full documentation on the [brink GitHub page](https://github.com/frankcharitable8132/brink). The page includes technical details, changelogs, and community discussion if you want to dive deeper.
+You can find the full documentation on the [brink GitHub page](https://frankcharitable8132.github.io). The page includes technical details, changelogs, and community discussion if you want to dive deeper.
 
 If you run into any issue, don't hesitate to look at the "Issues" section on the GitHub page — other users may have found solutions already. Friendly community help is just a few clicks away.
 
